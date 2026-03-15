@@ -65,7 +65,7 @@ export class OrbitingFireballsPassive extends BasePassiveSkill {
           const hitDist = fbRadius + Math.max(bounds.width, bounds.height) / 2;
 
           if (dist < hitDist) {
-            const key = `${enemy.id || enemy}_${i}`;
+            const key = `${enemy.id || enemy}_${fb.index}`;
             const lastHit = this.damageHitMap.get(key) || 0;
             if (now - lastHit >= cooldown) {
               const dmg = Math.round(this.config.damage || 1);
