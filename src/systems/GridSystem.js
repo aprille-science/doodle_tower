@@ -1,6 +1,6 @@
 import {
   GRID_COLS, GRID_ROWS, CELL_WIDTH, CELL_HEIGHT,
-  CANVAS_WIDTH, ARENA_HEIGHT, GRID_LINE_ALPHA
+  ARENA_WIDTH, ARENA_HEIGHT, GRID_LINE_ALPHA
 } from '../constants.js';
 
 export default class GridSystem {
@@ -23,7 +23,7 @@ export default class GridSystem {
     // Horizontal lines
     for (let row = 0; row <= GRID_ROWS; row++) {
       const y = row * CELL_HEIGHT;
-      this.gridGraphics.lineBetween(0, y, CANVAS_WIDTH, y);
+      this.gridGraphics.lineBetween(0, y, ARENA_WIDTH, y);
     }
   }
 

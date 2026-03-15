@@ -1,14 +1,13 @@
 {
-  "id": "pattern_spread",
+  "id": "pattern_dancer_spread",
   "type": "projectile_spread",
-  "warningDurationMs": 500,
+  "warningDurationMs": 0,
   "damage": 1,
   "pierceMode": "none",
   "speed": 200,
   "count": 5,
   "spreadAngleDegrees": 60,
   "centerDirectionDegrees": 270,
-  "spawnGridCol": 7,
-  "spawnGridRow": 4,
-  "color": "0xffaa00"
+  "spawnFromEnemy": true,
+  "color": "0xff66cc"
 }

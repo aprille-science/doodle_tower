@@ -1,0 +1,21 @@
+{
+  "id": "wanderer_01",
+  "name": "Wanderer",
+  "hp": 20,
+  "phases": [
+    {
+      "phase": 0,
+      "hpThreshold": 1.0,
+      "attackPatterns": ["pattern_wanderer_stomp"],
+      "attackIntervalMs": 3500
+    }
+  ],
+  "gridPosition": { "col": 2, "row": 2 },
+  "size": { "cols": 1, "rows": 1 },
+  "movementBehavior": {
+    "type": "random_move",
+    "speed": 60,
+    "idleDurationMs": 800,
+    "biasTowardPlayer": 0.4
+  }
+}

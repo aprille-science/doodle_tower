@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import {
-  CANVAS_WIDTH, ARENA_HEIGHT, CELL_WIDTH, CELL_HEIGHT
+  CANVAS_WIDTH, ARENA_HEIGHT, CELL_WIDTH, CELL_HEIGHT, GRID_COLS, GRID_ROWS
 } from '../constants.js';
 import GridSystem from '../systems/GridSystem.js';
 import PhysicsSystem from '../systems/PhysicsSystem.js';
@@ -8,11 +8,16 @@ import DamageSystem from '../systems/DamageSystem.js';
 import ShieldSystem from '../systems/ShieldSystem.js';
 import AttackSystem from '../systems/AttackSystem.js';
 import PhaseSystem from '../systems/PhaseSystem.js';
+import { ObstacleMap } from '../systems/navigation/ObstacleMap.js';
+import { Pathfinder } from '../systems/navigation/Pathfinder.js';
+import { SteeringSystem } from '../systems/navigation/SteeringSystem.js';
+import { MovementSystem } from '../systems/movement/MovementSystem.js';
 import Player from '../entities/Player.js';
 import Platform from '../entities/Platform.js';
 import Enemy from '../entities/Enemy.js';
 import TerrainTile from '../entities/TerrainTile.js';
 import ParryEffect from '../ui/ParryEffect.js';
+import { SkillManager } from '../skills/SkillManager.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -20,15 +25,21 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
-    // Load data
     const mapData = this.cache.json.get('map_01');
     const playerData = this.cache.json.get('player_default');
 
-    // Load attack pattern cache
+    // Load all attack pattern cache
     this.patternCache = {};
-    this.patternCache['pattern_stomp'] = this.cache.json.get('pattern_stomp');
-    this.patternCache['pattern_laser'] = this.cache.json.get('pattern_laser');
-    this.patternCache['pattern_spread'] = this.cache.json.get('pattern_spread');
+    const patternIds = [
+      'pattern_stomp', 'pattern_laser', 'pattern_spread',
+      'pattern_wanderer_stomp', 'pattern_dancer_spread',
+      'pattern_laser_aimed', 'pattern_radial',
+      'pattern_berserker_spread', 'pattern_shockwave'
+    ];
+    for (const id of patternIds) {
+      const data = this.cache.json.get(id);
+      if (data) this.patternCache[id] = data;
+    }
 
     // Initialize grid
     this.gridSystem = new GridSystem(this);
@@ -55,10 +66,17 @@ export default class GameScene extends Phaser.Scene {
     this.platform = new Platform(this);
     this.player = new Player(this, playerData);
 
+    // Create skill manager and attach to player
+    this.player.skillManager = new SkillManager(this.player, this, playerData);
+
     // Create enemies
     this.enemies = [];
+    this.reinforcements = mapData.reinforcements || [];
+    this.defeatedEnemyIds = new Set();
+
     for (const enemyDef of mapData.initialEnemies) {
       const enemyData = this.cache.json.get(enemyDef.enemyId);
+      if (!enemyData) continue;
       const enemy = new Enemy(this, enemyData, enemyDef.gridPosition);
       this.enemies.push(enemy);
     }
@@ -66,7 +84,19 @@ export default class GameScene extends Phaser.Scene {
     // Create parry effect
     this.parryEffect = new ParryEffect(this);
 
-    // Initialize systems
+    // Initialize navigation
+    this.obstacleMap = new ObstacleMap(GRID_COLS, GRID_ROWS);
+    this.obstacleMap.rebuildFromTerrain(this.terrainTiles);
+    this.pathfinder = new Pathfinder();
+    this.steeringSystem = new SteeringSystem();
+
+    // Initialize movement system
+    this.movementSystem = new MovementSystem(this.obstacleMap, this.pathfinder, this.steeringSystem);
+    for (const enemy of this.enemies) {
+      this.movementSystem.register(enemy, this.player, this);
+    }
+
+    // Initialize combat systems
     this.physicsSystem = new PhysicsSystem(this);
     this.shieldSystem = new ShieldSystem(this, this.player, this.parryEffect);
     this.damageSystem = new DamageSystem(this, this.player, this.shieldSystem);
@@ -79,10 +109,68 @@ export default class GameScene extends Phaser.Scene {
       enemies: this.enemies
     });
 
+    // Wire events
+    this.events.on('chargeHitWall', (data) => {
+      this.attackSystem.spawnShockwaveAtPoint(data.impactX, data.impactY);
+    });
+
+    this.events.on('tweenCycleComplete', (data) => {
+      const enemy = data.enemy;
+      if (!enemy.alive) return;
+      if (enemy.attackOnEvent && enemy.attackOnEvent.event === 'tweenCycleComplete') {
+        this.attackSystem.spawnEventAttack(enemy.attackOnEvent.pattern, enemy);
+      }
+    });
+
+    this.events.on('enemyDamaged', (enemy) => {
+      if (!enemy.alive) {
+        this.onEnemyDefeated(enemy);
+        return;
+      }
+      this.movementSystem.onEnemyHit(enemy);
+    });
+
+    this.events.on('phaseTransition', (data) => {
+      this.movementSystem.onPhaseEnter(data.enemy);
+    });
+
     // Game state
     this.gameOver = false;
     this.gameWon = false;
     this.endText = null;
+  }
+
+  onEnemyDefeated(enemy) {
+    this.defeatedEnemyIds.add(enemy.id);
+
+    // Check reinforcements
+    for (const reinf of this.reinforcements) {
+      if (reinf.trigger === 'enemy_defeated' && reinf.targetEnemyId === enemy.id) {
+        this.time.delayedCall(reinf.spawnAfterMs || 2000, () => {
+          this.spawnReinforcements(reinf);
+        });
+      }
+    }
+  }
+
+  spawnReinforcements(reinf) {
+    const count = Math.min(reinf.spawnCount, reinf.positions.length);
+    for (let i = 0; i < count; i++) {
+      const enemyData = this.cache.json.get(reinf.spawnEnemyId);
+      if (!enemyData) continue;
+      const pos = reinf.positions[i];
+      const enemy = new Enemy(this, enemyData, pos);
+      this.enemies.push(enemy);
+      this.movementSystem.register(enemy, this.player, this);
+    }
+    // Reschedule attacks to include new enemies
+    this.attackSystem.enemies = this.enemies;
+    this.attackSystem.reschedule();
+  }
+
+  onTerrainDestroyed() {
+    this.obstacleMap.rebuildFromTerrain(this.terrainTiles);
+    this.movementSystem.invalidateAllPaths();
   }
 
   update(time, delta) {
@@ -94,25 +182,42 @@ export default class GameScene extends Phaser.Scene {
     // Update player
     this.player.update(delta);
 
+    // Update skills
+    this.player.skillManager.update(delta);
+
     // Physics: player vs platform, walls, terrain
     this.physicsSystem.updatePlayer(this.player, this.platform, this.terrainTiles);
 
     // Physics: player vs enemies
     for (const enemy of this.enemies) {
-      this.physicsSystem.checkPlayerEnemyCollision(this.player, enemy);
+      if (enemy.alive) {
+        this.physicsSystem.checkPlayerEnemyCollision(this.player, enemy);
+      }
       enemy.update(delta);
     }
+
+    // Movement system
+    this.movementSystem.update(delta, this.enemies, this.player, this);
 
     // Attack system
     this.attackSystem.update(delta);
 
-    // Damage system
+    // Damage system (now passes enemies for player projectile hits)
     this.damageSystem.update(
       this.terrainTiles,
       this.attackSystem.attackZones,
       this.attackSystem.projectiles,
-      this.physicsSystem
+      this.physicsSystem,
+      this.enemies
     );
+
+    // Check for terrain changes
+    const prevActiveCount = this._lastTerrainActiveCount || this.terrainTiles.length;
+    const currentActiveCount = this.terrainTiles.filter(t => t.active).length;
+    if (currentActiveCount !== prevActiveCount) {
+      this.onTerrainDestroyed();
+    }
+    this._lastTerrainActiveCount = currentActiveCount;
 
     // Shield system
     this.shieldSystem.update(delta);
@@ -150,7 +255,6 @@ export default class GameScene extends Phaser.Scene {
       strokeThickness: 4
     }).setOrigin(0.5);
 
-    // Restart prompt
     this.add.text(CANVAS_WIDTH / 2, ARENA_HEIGHT / 2 + 60, 'Press R to restart', {
       fontSize: '18px',
       color: '#ffffff',

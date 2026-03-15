@@ -1,0 +1,44 @@
+{
+  "id": "guardian_01",
+  "name": "Guardian",
+  "hp": 40,
+  "phases": [
+    {
+      "phase": 0,
+      "hpThreshold": 1.0,
+      "attackPatterns": ["pattern_radial"],
+      "attackIntervalMs": 2800
+    },
+    {
+      "phase": 1,
+      "hpThreshold": 0.5,
+      "attackPatterns": ["pattern_radial"],
+      "attackIntervalMs": 2200,
+      "speedMultiplier": 1.2
+    }
+  ],
+  "gridPosition": { "col": 7, "row": 6 },
+  "size": { "cols": 1, "rows": 1 },
+  "movementBehavior": {
+    "type": "composite",
+    "phases": [
+      {
+        "hpThreshold": 1.0,
+        "loop": true,
+        "steps": [
+          { "type": "orbit", "centerCol": null, "centerRow": null, "radius": 4, "angularSpeed": 60, "durationMs": 5000 }
+        ]
+      },
+      {
+        "hpThreshold": 0.5,
+        "loop": true,
+        "steps": [
+          { "type": "orbit", "centerCol": null, "centerRow": null, "radius": 4, "angularSpeed": 120, "durationMs": 5000 }
+        ]
+      }
+    ],
+    "reactions": [
+      { "trigger": "on_hit", "behavior": { "type": "strafe", "preferredDistance": 4, "speed": 130, "durationMs": 800 }, "cooldownMs": 1500 }
+    ]
+  }
+}

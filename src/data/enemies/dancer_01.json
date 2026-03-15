@@ -1,0 +1,25 @@
+{
+  "id": "dancer_01",
+  "name": "Dancer",
+  "hp": 30,
+  "phases": [
+    {
+      "phase": 0,
+      "hpThreshold": 1.0,
+      "attackPatterns": ["pattern_dancer_spread"],
+      "attackIntervalMs": 9999999
+    }
+  ],
+  "gridPosition": { "col": 7, "row": 1 },
+  "size": { "cols": 1, "rows": 1 },
+  "attackOnEvent": {
+    "event": "tweenCycleComplete",
+    "pattern": "pattern_dancer_spread"
+  },
+  "movementBehavior": {
+    "type": "tweenX",
+    "durationMs": 2500,
+    "easing": "Sine.easeInOut",
+    "bounceAtEdge": true
+  }
+}

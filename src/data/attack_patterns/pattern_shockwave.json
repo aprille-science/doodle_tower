@@ -1,0 +1,15 @@
+{
+  "id": "pattern_shockwave",
+  "type": "zone_at_event",
+  "triggerEvent": "chargeHitWall",
+  "widthCells": 3,
+  "heightCells": 1,
+  "centeredOnImpact": true,
+  "warningDurationMs": 0,
+  "activeDurationMs": 600,
+  "damage": 3,
+  "bouncePlayer": true,
+  "passthrough": false,
+  "breakable": false,
+  "color": "0xff8800"
+}

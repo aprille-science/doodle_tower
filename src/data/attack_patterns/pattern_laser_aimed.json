@@ -1,12 +1,11 @@
 {
-  "id": "pattern_laser",
+  "id": "pattern_laser_aimed",
   "type": "projectile",
   "warningDurationMs": 600,
   "damage": 3,
   "pierceMode": "none",
   "speed": 320,
-  "directionDegrees": 270,
-  "spawnGridCol": 7,
-  "spawnGridRow": 4,
+  "aimAtPlayer": true,
+  "spawnFromEnemy": true,
   "color": "0xff0000"
 }

@@ -1,0 +1,12 @@
+{
+  "id": "pattern_wanderer_stomp",
+  "type": "zone_around_enemy",
+  "warningDurationMs": 700,
+  "activeDurationMs": 800,
+  "damage": 2,
+  "bouncePlayer": true,
+  "passthrough": false,
+  "breakable": false,
+  "radiusCells": 1,
+  "color": "0xff4400"
+}

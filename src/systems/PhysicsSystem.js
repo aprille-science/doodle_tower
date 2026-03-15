@@ -6,13 +6,8 @@ export default class PhysicsSystem {
   }
 
   updatePlayer(player, platform, terrainTiles) {
-    // Platform collision
     player.handlePlatformCollision(platform);
-
-    // Fall below arena
     player.checkFellBelow();
-
-    // Terrain collision
     this.checkTerrainCollisions(player, terrainTiles);
   }
 
@@ -33,7 +28,6 @@ export default class PhysicsSystem {
   bouncePlayerFromTile(player, tile) {
     const tileCenterX = tile.col * CELL_WIDTH + CELL_WIDTH / 2;
     const tileCenterY = tile.row * CELL_HEIGHT + CELL_HEIGHT / 2;
-
     const dx = player.x - tileCenterX;
     const dy = player.y - tileCenterY;
 
@@ -48,14 +42,14 @@ export default class PhysicsSystem {
     if (!enemy.alive || !player.alive) return false;
 
     const bounds = enemy.getBounds();
-    const dist = this.circleRectOverlap(
+    const overlap = this.circleRectOverlap(
       player.x, player.y, player.radius,
       bounds.x, bounds.y, bounds.width, bounds.height
     );
 
-    if (dist) {
+    if (overlap) {
       enemy.takeDamage(player.contactDamage);
-      // Bounce player away from enemy
+      this.scene.events.emit('enemyDamaged', enemy);
       const ex = bounds.x + bounds.width / 2;
       const ey = bounds.y + bounds.height / 2;
       const dx = player.x - ex;
@@ -80,10 +74,20 @@ export default class PhysicsSystem {
 
   checkProjectilePlayerCollision(projectile, player) {
     if (!projectile.active || !player.alive) return false;
+    if (projectile.isPlayerProjectile) return false; // Don't hit own player
     const dx = projectile.x - player.x;
     const dy = projectile.y - player.y;
     const dist = dx * dx + dy * dy;
     const minDist = projectile.radius + player.radius;
     return dist < (minDist * minDist);
+  }
+
+  checkProjectileEnemyCollision(projectile, enemy) {
+    if (!projectile.active || !enemy.alive) return false;
+    const bounds = enemy.getBounds();
+    return this.circleRectOverlap(
+      projectile.x, projectile.y, projectile.radius,
+      bounds.x, bounds.y, bounds.width, bounds.height
+    );
   }
 }

@@ -24,6 +24,42 @@
       "speedMultiplier": 1.6
     }
   ],
-  "gridPosition": { "col": 11, "row": 6 },
-  "size": { "cols": 2, "rows": 2 }
+  "gridPosition": { "col": 7, "row": 1 },
+  "size": { "cols": 2, "rows": 2 },
+  "movementBehavior": {
+    "type": "composite",
+    "phases": [
+      {
+        "hpThreshold": 1.0,
+        "loop": true,
+        "steps": [
+          { "type": "tweenX", "durationMs": 4000, "easing": "Sine.easeInOut", "bounceAtEdge": true },
+          { "type": "moveTo", "waypoints": [{ "col": 7, "row": 3, "speed": 100, "waitMs": 300, "easing": "Quad.easeOut" }], "loop": false },
+          { "type": "chase", "speed": 70, "predictionFactor": 0.3, "durationMs": 2000 }
+        ]
+      },
+      {
+        "hpThreshold": 0.6,
+        "loop": true,
+        "steps": [
+          { "type": "charge", "telegraphMs": 700, "speed": 400, "durationMs": 800 },
+          { "type": "orbit", "centerCol": null, "centerRow": null, "radius": 4, "angularSpeed": 90, "durationMs": 3000 },
+          { "type": "strafe", "preferredDistance": 5, "speed": 110, "durationMs": 2500 }
+        ]
+      },
+      {
+        "hpThreshold": 0.25,
+        "loop": true,
+        "steps": [
+          { "type": "teleport", "targetCol": null, "targetRow": null, "delayMs": 400 },
+          { "type": "chase", "speed": 160, "predictionFactor": 0.7, "durationMs": 2000 },
+          { "type": "charge", "telegraphMs": 400, "speed": 550, "durationMs": 500 }
+        ]
+      }
+    ],
+    "reactions": [
+      { "trigger": "on_hit", "behavior": { "type": "run", "speed": 200, "durationMs": 350 }, "cooldownMs": 1200 },
+      { "trigger": "on_phase_enter", "behavior": { "type": "teleport", "targetCol": 7, "targetRow": 2, "delayMs": 200 } }
+    ]
+  }
 }

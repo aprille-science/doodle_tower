@@ -1,0 +1,13 @@
+{
+  "id": "pattern_radial",
+  "type": "projectile_spread",
+  "warningDurationMs": 400,
+  "damage": 1,
+  "pierceMode": "none",
+  "speed": 180,
+  "count": 8,
+  "spreadAngleDegrees": 360,
+  "centerDirectionDegrees": 0,
+  "spawnFromEnemy": true,
+  "color": "0x00ffcc"
+}

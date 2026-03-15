@@ -8,8 +8,8 @@
   "passthrough": false,
   "breakable": false,
   "cells": [
-    { "col": 10, "row": 28 }, { "col": 11, "row": 28 }, { "col": 12, "row": 28 }, { "col": 13, "row": 28 },
-    { "col": 10, "row": 29 }, { "col": 11, "row": 29 }, { "col": 12, "row": 29 }, { "col": 13, "row": 29 }
+    { "col": 6, "row": 12 }, { "col": 7, "row": 12 }, { "col": 8, "row": 12 }, { "col": 9, "row": 12 },
+    { "col": 6, "row": 13 }, { "col": 7, "row": 13 }, { "col": 8, "row": 13 }, { "col": 9, "row": 13 }
   ],
   "color": "0xff4400"
 }
