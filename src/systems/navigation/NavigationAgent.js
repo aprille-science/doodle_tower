@@ -1,4 +1,4 @@
-import { CELL_WIDTH, CELL_HEIGHT, NAV_RECALC_INTERVAL_MS, ENEMY_SEPARATION_FORCE, ENEMY_ARENA_MAX_ROW, ARENA_WIDTH } from '../../constants.js';
+import { CELL_WIDTH, CELL_HEIGHT, NAV_RECALC_INTERVAL_MS, ENEMY_SEPARATION_FORCE, ENEMY_ARENA_MAX_ROW, ARENA_WIDTH, GAME_SPEED_SCALE } from '../../constants.js';
 
 export class NavigationAgent {
   constructor(enemy, obstacleMap, pathfinder, steeringSystem) {
@@ -12,7 +12,8 @@ export class NavigationAgent {
     this.needsRecalc = true;
   }
 
-  moveToward(targetWorldX, targetWorldY, speed, dt, allEnemies) {
+  moveToward(targetWorldX, targetWorldY, rawSpeed, dt, allEnemies) {
+    const speed = rawSpeed * GAME_SPEED_SCALE;
     const enemy = this.enemy;
     const startCol = Math.floor(enemy.x / CELL_WIDTH);
     const startRow = Math.floor(enemy.y / CELL_HEIGHT);
@@ -65,7 +66,8 @@ export class NavigationAgent {
     this.clampToArena(enemy);
   }
 
-  moveAwayFrom(sourceWorldX, sourceWorldY, speed, dt, allEnemies) {
+  moveAwayFrom(sourceWorldX, sourceWorldY, rawSpeed, dt, allEnemies) {
+    const speed = rawSpeed * GAME_SPEED_SCALE;
     const enemy = this.enemy;
     const dx = enemy.x - sourceWorldX;
     const dy = enemy.y - sourceWorldY;
@@ -93,8 +95,8 @@ export class NavigationAgent {
     const enemy = this.enemy;
     const sep = this.steeringSystem.computeSeparation(enemy, allEnemies, ENEMY_SEPARATION_FORCE);
 
-    enemy.x += (velocityX + sep.x) * dt;
-    enemy.y += (velocityY + sep.y) * dt;
+    enemy.x += (velocityX * GAME_SPEED_SCALE + sep.x) * dt;
+    enemy.y += (velocityY * GAME_SPEED_SCALE + sep.y) * dt;
     this.clampToArena(enemy);
   }
 

@@ -9,13 +9,30 @@ const DEFAULT_OPTS = {
   outlineThickness: 2
 };
 
-// Simple pool: reuse Phaser text objects to reduce GC
+// Scene-scoped pool to avoid stale refs on restart
+let poolScene = null;
 const pool = [];
 const MAX_POOL = 30;
 
+function clearPool() {
+  for (const t of pool) {
+    if (t && t.scene) t.destroy();
+  }
+  pool.length = 0;
+  poolScene = null;
+}
+
 function acquireText(scene, x, y, str, style) {
-  if (pool.length > 0) {
+  // If scene changed (restart), discard old pool
+  if (poolScene && poolScene !== scene) {
+    clearPool();
+  }
+  poolScene = scene;
+
+  while (pool.length > 0) {
     const t = pool.pop();
+    // Validate: text object must still belong to this scene
+    if (!t.scene || t.scene !== scene) continue;
     t.setPosition(x, y);
     t.setText(str);
     t.setStyle(style);
@@ -24,13 +41,14 @@ function acquireText(scene, x, y, str, style) {
     t.setActive(true).setVisible(true);
     return t;
   }
+
   const t = scene.add.text(x, y, str, style).setOrigin(0.5);
-  t.setDepth(1000); // always on top
+  t.setDepth(1000);
   return t;
 }
 
 function releaseText(t) {
-  if (!t) return;
+  if (!t || !t.scene) return;
   t.setActive(false).setVisible(false);
   if (pool.length < MAX_POOL) {
     pool.push(t);

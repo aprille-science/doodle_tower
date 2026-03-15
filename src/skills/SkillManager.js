@@ -37,15 +37,14 @@ export class SkillManager {
     const fKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
     fKey.on('down', () => {
       if (this.activeSkill && this.activeSkill.isReady()) {
-        const pointer = scene.input.activePointer;
-        this.castActive(pointer.worldX, pointer.worldY);
+        this.castActive();
       }
     });
   }
 
-  castActive(worldX, worldY) {
+  castActive() {
     if (this.activeSkill) {
-      this.activeSkill.cast(worldX, worldY);
+      this.activeSkill.cast();
     }
   }
 

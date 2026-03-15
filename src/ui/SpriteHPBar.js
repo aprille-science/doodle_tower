@@ -6,11 +6,9 @@ export class SpriteHPBar {
     this.barWidth = 40;
     this.barHeight = 5;
     this.displayFill = 1;
-    this.revealed = false;
 
     this.graphics = scene.add.graphics();
-    this.graphics.setDepth(900); // Above all entities
-    this.graphics.setAlpha(0);
+    this.graphics.setDepth(900);
   }
 
   update() {
@@ -22,19 +20,10 @@ export class SpriteHPBar {
 
     const hpFraction = Math.max(0, entity.hp / entity.maxHp);
 
-    // Reveal permanently on first damage
-    if (hpFraction < 1 && !this.revealed) {
-      this.revealed = true;
-      this.graphics.setAlpha(1);
-    }
-
-    if (!this.revealed) return;
-
     // Lerp display fill toward true HP fraction
     this.displayFill += (hpFraction - this.displayFill) * 0.15;
 
     const halfW = this.barWidth / 2;
-    // Use the entity's half-height to position above its top edge
     const halfH = entity.radius || Math.max(entity.width || 0, entity.height || 0) / 2 || 25;
     const barX = entity.x - halfW;
     const barY = entity.y - halfH - 10;
@@ -49,6 +38,10 @@ export class SpriteHPBar {
     const fillWidth = Math.max(0, this.displayFill * this.barWidth);
     this.graphics.fillStyle(this.barColor, 1);
     this.graphics.fillRect(barX, barY, fillWidth, this.barHeight);
+
+    // Border
+    this.graphics.lineStyle(1, 0x555555, 0.6);
+    this.graphics.strokeRect(barX, barY, this.barWidth, this.barHeight);
   }
 
   destroy() {
