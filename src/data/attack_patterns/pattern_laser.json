@@ -1,0 +1,12 @@
+{
+  "id": "pattern_laser",
+  "type": "projectile",
+  "warningDurationMs": 600,
+  "damage": 3,
+  "piercing": false,
+  "speed": 320,
+  "directionDegrees": 270,
+  "spawnGridCol": 11,
+  "spawnGridRow": 8,
+  "color": "0xff0000"
+}

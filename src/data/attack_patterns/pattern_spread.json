@@ -1,0 +1,14 @@
+{
+  "id": "pattern_spread",
+  "type": "projectile_spread",
+  "warningDurationMs": 500,
+  "damage": 1,
+  "piercing": false,
+  "speed": 200,
+  "count": 5,
+  "spreadAngleDegrees": 60,
+  "centerDirectionDegrees": 270,
+  "spawnGridCol": 11,
+  "spawnGridRow": 8,
+  "color": "0xffaa00"
+}

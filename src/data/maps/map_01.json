@@ -1,0 +1,33 @@
+{
+  "id": "map_01",
+  "name": "The Vault",
+  "winCondition": "defeat_all_enemies",
+  "initialEnemies": [
+    { "enemyId": "boss_01", "gridPosition": { "col": 11, "row": 6 } }
+  ],
+  "reinforcements": [],
+  "initialTerrain": [
+    {
+      "type": "breakable",
+      "hp": 3,
+      "damage": 1,
+      "bouncePlayer": true,
+      "passthrough": false,
+      "cells": [
+        { "col": 5, "row": 15 }, { "col": 6, "row": 15 }, { "col": 7, "row": 15 }
+      ],
+      "color": "0x888888"
+    },
+    {
+      "type": "damage",
+      "hp": -1,
+      "damage": 1,
+      "bouncePlayer": false,
+      "passthrough": true,
+      "cells": [
+        { "col": 18, "row": 20 }, { "col": 19, "row": 20 }
+      ],
+      "color": "0xff6600"
+    }
+  ]
+}

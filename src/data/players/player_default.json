@@ -1,0 +1,10 @@
+{
+  "id": "player_default",
+  "hp": 10,
+  "shieldHP": 30,
+  "initialVelocityX": 200,
+  "initialVelocityY": -300,
+  "maxSpeed": 500,
+  "contactDamage": 2,
+  "radius": 12
+}
