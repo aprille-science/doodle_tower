@@ -7,7 +7,7 @@
   "centeredOnImpact": true,
   "warningDurationMs": 0,
   "activeDurationMs": 600,
-  "damage": 3,
+  "damage": 18,
   "bouncePlayer": true,
   "passthrough": false,
   "breakable": false,

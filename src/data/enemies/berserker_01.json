@@ -1,7 +1,9 @@
 {
   "id": "berserker_01",
   "name": "Berserker",
-  "hp": 50,
+  "hp": 100,
+  "contactDamage": 10,
+  "attackDamage": 1.5,
   "phases": [
     {
       "phase": 0,

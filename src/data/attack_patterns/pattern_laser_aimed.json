@@ -2,7 +2,7 @@
   "id": "pattern_laser_aimed",
   "type": "projectile",
   "warningDurationMs": 600,
-  "damage": 3,
+  "damage": 12,
   "pierceMode": "none",
   "speed": 320,
   "aimAtPlayer": true,

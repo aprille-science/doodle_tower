@@ -7,6 +7,7 @@ export default class Projectile {
     this.scene = scene;
     this.damage = data.damage || 1;
     this.enemyDamage = data.enemyDamage !== undefined ? data.enemyDamage : this.damage;
+    this.terrainDamage = data.terrainDamage !== undefined ? data.terrainDamage : this.damage;
     this.pierceMode = data.pierceMode || 'none';
     this.maxHits = data.maxHits !== undefined ? data.maxHits : 1;
     this.lifetime = data.lifetime !== undefined ? data.lifetime : 5000;
@@ -143,7 +144,7 @@ export default class Projectile {
         return this.resolveDestroyTerrain(terrainTile);
       case 'destroy_all':
         if (terrainTile.hp !== -1) {
-          terrainTile.takeDamage(this.damage);
+          terrainTile.takeDamage(this.terrainDamage);
         }
         return false; // Keep going
       case 'bounce':
@@ -186,7 +187,7 @@ export default class Projectile {
       this.registerHit();
       return true;
     }
-    terrainTile.takeDamage(this.damage);
+    terrainTile.takeDamage(this.terrainDamage);
     return false; // Continue moving
   }
 

@@ -60,6 +60,7 @@ export default class Enemy {
 
     // Update name text position
     this.nameText.setPosition(this.x, this.y);
+    this.draw();
   }
 
   takeDamage(amount) {
@@ -101,8 +102,10 @@ export default class Enemy {
     const drawX = this.x - this.width / 2;
     const drawY = this.y - this.height / 2;
 
-    // Flash during phase transition
-    if (this.phaseTransitioning && Math.floor(this.flashTimer / 100) % 2 === 0) {
+    // Flash during phase transition or damage
+    if (this._damageFlash) {
+      this.graphics.fillStyle(0xffffff, 1);
+    } else if (this.phaseTransitioning && Math.floor(this.flashTimer / 100) % 2 === 0) {
       this.graphics.fillStyle(0xffffff, 0.9);
     } else if (this._chargeTint) {
       this.graphics.fillStyle(0xff2222, 1);

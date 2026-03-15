@@ -26,27 +26,37 @@ export default class UIScene extends Phaser.Scene {
     this.panelBg.lineStyle(2, 0x333366, 1);
     this.panelBg.lineBetween(0, panelY, CANVAS_WIDTH, panelY);
 
-    // === TOP ROW (y=808 to y=835): Enemy HP + Phase ===
-    this.enemyHPBars = [];
-    const aliveEnemies = this.enemies.filter(e => e.alive);
-    const enemyBarWidth = Math.min(barWidth, (CANVAS_WIDTH - 200) / Math.max(1, aliveEnemies.length) - 10);
+    // === TOP ROW: Boss HP Bar (hidden until boss appears) ===
+    this.bossGroup = this.add.container(0, 0);
+    this.bossGroup.setVisible(false);
 
-    // Just create a single combined enemy HP bar for all enemies
-    this.enemyHPBar = new HPBar(
-      this,
-      leftMargin, panelY + 12,
-      CANVAS_WIDTH - 220, barHeight,
-      0x9933cc,
-      'ENEMIES'
-    );
+    // Boss name text
+    this.bossNameText = this.add.text(400, panelY + 10, '', {
+      fontSize: '14px',
+      color: '#ffffff',
+      fontFamily: 'monospace',
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
+    this.bossGroup.add(this.bossNameText);
 
-    this.phaseText = this.add.text(
-      CANVAS_WIDTH - 160, panelY + 10,
-      '',
-      { fontSize: '13px', color: '#ccccff', fontFamily: 'monospace' }
-    );
+    // Boss HP bar track
+    this.bossBarGraphics = this.add.graphics();
+    this.bossGroup.add(this.bossBarGraphics);
 
-    // === MIDDLE ROW (y=840 to y=870): Player HP + Shield ===
+    // Boss damage indicator
+    this.bossDmgGraphics = this.add.graphics();
+    this.bossGroup.add(this.bossDmgGraphics);
+
+    this.bossHPFraction = 1;
+    this.bossDmgIndicatorWidth = 0;
+    this.bossAlive = false;
+
+    // Listen for boss HP changes
+    this.events.on('bossHPChanged', (data) => {
+      this.onBossHPChanged(data);
+    });
+
+    // === MIDDLE ROW (y=848 to y=870): Player HP + Shield ===
     this.playerHPBar = new HPBar(
       this,
       leftMargin, panelY + 48,
@@ -65,6 +75,13 @@ export default class UIScene extends Phaser.Scene {
       leftMargin + barWidth * 2 + 90, panelY + 50,
       '',
       { fontSize: '10px', color: '#ff4444', fontFamily: 'monospace' }
+    );
+
+    // === Phase indicator ===
+    this.phaseText = this.add.text(
+      CANVAS_WIDTH - 160, panelY + 10,
+      '',
+      { fontSize: '13px', color: '#ccccff', fontFamily: 'monospace' }
     );
 
     // === BOTTOM ROW (y=878 to y=950): Active skill cooldown ===
@@ -92,6 +109,80 @@ export default class UIScene extends Phaser.Scene {
     );
   }
 
+  onBossHPChanged(data) {
+    this.bossAlive = data.hp > 0;
+    this.bossGroup.setVisible(this.bossAlive);
+    if (!this.bossAlive) return;
+
+    this.bossNameText.setText(data.name);
+    this.bossHPFraction = data.hp / data.maxHp;
+
+    // Draw boss HP bar
+    this.drawBossHPBar();
+
+    // Trigger damage indicator
+    if (data.damageTaken > 0) {
+      const dmgFraction = data.damageTaken / data.maxHp;
+      this.bossDmgIndicatorWidth = dmgFraction * 600;
+      this.animateBossDamageIndicator();
+    }
+  }
+
+  drawBossHPBar() {
+    const barX = 100;
+    const barY = 826;
+    const barW = 600;
+    const barH = 14;
+
+    this.bossBarGraphics.clear();
+
+    // Background
+    this.bossBarGraphics.fillStyle(0x222222, 1);
+    this.bossBarGraphics.fillRect(barX, barY, barW, barH);
+
+    // Dark red full layer
+    this.bossBarGraphics.fillStyle(0x8b0000, 1);
+    this.bossBarGraphics.fillRect(barX, barY, barW * this.bossHPFraction, barH);
+
+    // Bright red actual HP fill (top layer)
+    this.bossBarGraphics.fillStyle(0xdd0000, 1);
+    this.bossBarGraphics.fillRect(barX, barY, barW * this.bossHPFraction, barH);
+
+    // Border
+    this.bossBarGraphics.lineStyle(2, 0x666666, 1);
+    this.bossBarGraphics.strokeRect(barX, barY, barW, barH);
+  }
+
+  animateBossDamageIndicator() {
+    // Draw white damage indicator at the edge of HP fill
+    const barX = 100;
+    const barY = 826;
+    const barH = 14;
+    const hpFillWidth = 600 * this.bossHPFraction;
+
+    this.bossDmgGraphics.clear();
+    this.bossDmgGraphics.fillStyle(0xffffff, 1);
+    this.bossDmgGraphics.fillRect(barX + hpFillWidth, barY, this.bossDmgIndicatorWidth, barH);
+
+    // Tween the indicator width to 0 over 600ms
+    this.tweens.add({
+      targets: this,
+      bossDmgIndicatorWidth: 0,
+      duration: 600,
+      ease: 'Quad.easeOut',
+      onUpdate: () => {
+        this.bossDmgGraphics.clear();
+        if (this.bossDmgIndicatorWidth > 0.5) {
+          this.bossDmgGraphics.fillStyle(0xffffff, 1);
+          this.bossDmgGraphics.fillRect(barX + hpFillWidth, barY, this.bossDmgIndicatorWidth, barH);
+        }
+      },
+      onComplete: () => {
+        this.bossDmgGraphics.clear();
+      }
+    });
+  }
+
   update() {
     if (!this.player) return;
 
@@ -110,25 +201,24 @@ export default class UIScene extends Phaser.Scene {
       this.lockoutText.setText('');
     }
 
-    // Update enemy HP - show total HP across all enemies
-    let totalHp = 0;
-    let totalMaxHp = 0;
+    // Phase indicator for boss
     let bossEnemy = null;
     for (const enemy of this.enemies) {
-      totalHp += Math.max(0, enemy.hp);
-      totalMaxHp += enemy.maxHp;
-      if (enemy.phases && enemy.phases.length > 1 && enemy.alive) {
+      if (enemy.data?.isBoss && enemy.alive) {
         bossEnemy = enemy;
       }
     }
-    this.enemyHPBar.update(totalHp, totalMaxHp);
 
-    // Phase indicator for boss
     if (bossEnemy) {
       const totalPhases = bossEnemy.phases.length;
       this.phaseText.setText(`Phase ${bossEnemy.currentPhase + 1} / ${totalPhases}`);
     } else {
       this.phaseText.setText('');
+      // Hide boss bar if boss died
+      if (this.bossAlive) {
+        this.bossAlive = false;
+        this.bossGroup.setVisible(false);
+      }
     }
 
     // Active skill cooldown

@@ -2,7 +2,7 @@
   "id": "pattern_spread",
   "type": "projectile_spread",
   "warningDurationMs": 500,
-  "damage": 1,
+  "damage": 6,
   "pierceMode": "none",
   "speed": 200,
   "count": 5,

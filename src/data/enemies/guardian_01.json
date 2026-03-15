@@ -1,7 +1,9 @@
 {
   "id": "guardian_01",
   "name": "Guardian",
-  "hp": 40,
+  "hp": 80,
+  "contactDamage": 8,
+  "attackDamage": 0.9,
   "phases": [
     {
       "phase": 0,
