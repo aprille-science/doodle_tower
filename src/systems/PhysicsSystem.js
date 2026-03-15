@@ -42,39 +42,38 @@ export default class PhysicsSystem {
     if (!enemy.alive || !player.alive) return false;
 
     const bounds = enemy.getBounds();
-    const overlap = this.circleRectOverlap(
+    if (!this.circleRectOverlap(
       player.x, player.y, player.radius,
       bounds.x, bounds.y, bounds.width, bounds.height
-    );
+    )) return false;
 
-    if (overlap) {
-      // Player damages enemy via DamageSystem
-      const playerDmg = Math.round(player.contactDamage);
-      if (this.scene.damageSystem) {
-        this.scene.damageSystem.applyDamageToEnemy(enemy, playerDmg);
-      } else {
-        enemy.takeDamage(playerDmg);
-        this.scene.events.emit('enemyDamaged', enemy, playerDmg);
-      }
+    const dmgSys = this.scene.damageSystem;
 
-      // Enemy damages player
-      const enemyContactDmg = enemy.data?.contactDamage || 0;
-      if (enemyContactDmg > 0) {
-        this.scene.events.emit('enemyContactDamage', { enemy, damage: enemyContactDmg });
-      }
-
-      const ex = bounds.x + bounds.width / 2;
-      const ey = bounds.y + bounds.height / 2;
-      const dx = player.x - ex;
-      const dy = player.y - ey;
-      if (Math.abs(dx) > Math.abs(dy)) {
-        player.vx = dx > 0 ? Math.abs(player.vx) : -Math.abs(player.vx);
-      } else {
-        player.vy = dy > 0 ? Math.abs(player.vy) : -Math.abs(player.vy);
-      }
-      return true;
+    // Player damages enemy
+    if (dmgSys) {
+      dmgSys.applyDamageToEnemy(enemy, player.contactDamage);
+    } else {
+      enemy.takeDamage(player.contactDamage);
     }
-    return false;
+
+    // Enemy damages player
+    const enemyContactDmg = enemy.data?.contactDamage || 0;
+    if (enemyContactDmg > 0 && dmgSys) {
+      dmgSys.applyDamageToPlayer(enemyContactDmg, enemy.x, enemy.y);
+    }
+
+    // Bounce player away from enemy
+    const ex = bounds.x + bounds.width / 2;
+    const ey = bounds.y + bounds.height / 2;
+    const dx = player.x - ex;
+    const dy = player.y - ey;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      player.vx = dx > 0 ? Math.abs(player.vx) : -Math.abs(player.vx);
+    } else {
+      player.vy = dy > 0 ? Math.abs(player.vy) : -Math.abs(player.vy);
+    }
+
+    return true;
   }
 
   circleRectOverlap(cx, cy, cr, rx, ry, rw, rh) {
@@ -87,12 +86,11 @@ export default class PhysicsSystem {
 
   checkProjectilePlayerCollision(projectile, player) {
     if (!projectile.active || !player.alive) return false;
-    if (projectile.isPlayerProjectile) return false; // Don't hit own player
+    if (projectile.isPlayerProjectile) return false;
     const dx = projectile.x - player.x;
     const dy = projectile.y - player.y;
-    const dist = dx * dx + dy * dy;
     const minDist = projectile.radius + player.radius;
-    return dist < (minDist * minDist);
+    return (dx * dx + dy * dy) < (minDist * minDist);
   }
 
   checkProjectileEnemyCollision(projectile, enemy) {
