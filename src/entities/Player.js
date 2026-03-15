@@ -1,6 +1,6 @@
 import {
   CELL_WIDTH, CELL_HEIGHT, CANVAS_WIDTH, ARENA_HEIGHT,
-  MOMENTUM_INFLUENCE_FACTOR
+  MOMENTUM_INFLUENCE_FACTOR, GAME_SPEED_SCALE
 } from '../constants.js';
 
 export default class Player {
@@ -12,10 +12,10 @@ export default class Player {
     this.maxShieldHP = data.shieldHP;
     this.contactDamage = data.contactDamage;
     this.radius = data.radius;
-    this.maxSpeed = data.maxSpeed;
+    this.maxSpeed = data.maxSpeed * GAME_SPEED_SCALE;
 
-    this.vx = data.initialVelocityX;
-    this.vy = data.initialVelocityY;
+    this.vx = data.initialVelocityX * GAME_SPEED_SCALE;
+    this.vy = data.initialVelocityY * GAME_SPEED_SCALE;
 
     // Start above platform center
     this.x = CANVAS_WIDTH / 2;
@@ -91,10 +91,11 @@ export default class Player {
   }
 
   checkFellBelow() {
-    // If player falls below row 31 (bottom of arena)
-    if (this.y - this.radius > ARENA_HEIGHT) {
+    // Bounce off bottom arena wall and take damage
+    if (this.y + this.radius > ARENA_HEIGHT) {
+      this.y = ARENA_HEIGHT - this.radius;
+      this.vy = -Math.abs(this.vy);
       this.takeDamage(1, true); // bypass shield for fall damage
-      this.respawn();
       return true;
     }
     return false;

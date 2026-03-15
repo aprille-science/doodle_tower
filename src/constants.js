@@ -31,6 +31,9 @@ export const ENEMY_ARENA_MAX_ROW = 12;
 export const NAV_RECALC_INTERVAL_MS = 400;
 export const ENEMY_SEPARATION_FORCE = 60;
 
+// Global speed scale (applied to everything except platform)
+export const GAME_SPEED_SCALE = 0.7;
+
 // Grid Visuals
 export const GRID_LINE_ALPHA = 0.08;
 export const CELL_HIGHLIGHT_ALPHA = 0.35;

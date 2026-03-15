@@ -1,4 +1,4 @@
-import { CELL_WIDTH, CELL_HEIGHT, CANVAS_WIDTH, ARENA_HEIGHT } from '../constants.js';
+import { CELL_WIDTH, CELL_HEIGHT, CANVAS_WIDTH, ARENA_HEIGHT, GAME_SPEED_SCALE } from '../constants.js';
 
 const VALID_PIERCE_MODES = ['none', 'pierce_enemies', 'pierce_terrain', 'destroy_terrain', 'destroy_all', 'bounce', 'ghost'];
 
@@ -13,7 +13,7 @@ export default class Projectile {
     this.lifetime = data.lifetime !== undefined ? data.lifetime : 5000;
     this.damageType = data.damageType || 'physical';
     this.onDestroyEffect = data.onDestroyEffect || 'fizzle';
-    this.speed = data.speed || 200;
+    this.speed = (data.speed || 200) * GAME_SPEED_SCALE;
     this.color = typeof data.color === 'string' ? parseInt(data.color) : (data.color || 0xffffff);
     this.radius = data.radius || 6;
     this.active = true;
@@ -32,8 +32,8 @@ export default class Projectile {
 
     // Direction from degrees or direct vx/vy
     if (data.vx !== undefined && data.vy !== undefined) {
-      this.vx = data.vx;
-      this.vy = data.vy;
+      this.vx = data.vx * GAME_SPEED_SCALE;
+      this.vy = data.vy * GAME_SPEED_SCALE;
     } else {
       const rad = Phaser.Math.DegToRad(data.directionDegrees || 0);
       this.vx = Math.cos(rad) * this.speed;
