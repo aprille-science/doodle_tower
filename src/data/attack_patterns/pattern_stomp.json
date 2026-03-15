@@ -3,7 +3,7 @@
   "type": "zone",
   "warningDurationMs": 800,
   "activeDurationMs": 1200,
-  "damage": 2,
+  "damage": 10,
   "bouncePlayer": true,
   "passthrough": false,
   "breakable": false,

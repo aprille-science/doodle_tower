@@ -1,7 +1,9 @@
 {
   "id": "wanderer_01",
   "name": "Wanderer",
-  "hp": 20,
+  "hp": 40,
+  "contactDamage": 4,
+  "attackDamage": 0.7,
   "phases": [
     {
       "phase": 0,

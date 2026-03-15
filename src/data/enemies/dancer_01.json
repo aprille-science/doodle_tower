@@ -1,7 +1,9 @@
 {
   "id": "dancer_01",
   "name": "Dancer",
-  "hp": 30,
+  "hp": 60,
+  "contactDamage": 5,
+  "attackDamage": 0.9,
   "phases": [
     {
       "phase": 0,

@@ -18,6 +18,7 @@ import Enemy from '../entities/Enemy.js';
 import TerrainTile from '../entities/TerrainTile.js';
 import ParryEffect from '../ui/ParryEffect.js';
 import { SkillManager } from '../skills/SkillManager.js';
+import { SpriteHPBar } from '../ui/SpriteHPBar.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -81,6 +82,16 @@ export default class GameScene extends Phaser.Scene {
       this.enemies.push(enemy);
     }
 
+    // Create sprite HP bars
+    this.spriteHPBars = [];
+    this.playerHPBar = new SpriteHPBar(this, this.player, 0x33ee66);
+    for (const enemy of this.enemies) {
+      if (!enemy.data.isBoss) {
+        const bar = new SpriteHPBar(this, enemy, 0xee3333);
+        this.spriteHPBars.push(bar);
+      }
+    }
+
     // Create parry effect
     this.parryEffect = new ParryEffect(this);
 
@@ -109,9 +120,23 @@ export default class GameScene extends Phaser.Scene {
       enemies: this.enemies
     });
 
+    // Send initial boss HP to UIScene
+    for (const enemy of this.enemies) {
+      if (enemy.data.isBoss) {
+        this.time.delayedCall(100, () => {
+          this.scene.get('UIScene').events.emit('bossHPChanged', {
+            name: enemy.name,
+            hp: enemy.hp,
+            maxHp: enemy.maxHp,
+            damageTaken: 0
+          });
+        });
+      }
+    }
+
     // Wire events
     this.events.on('chargeHitWall', (data) => {
-      this.attackSystem.spawnShockwaveAtPoint(data.impactX, data.impactY);
+      this.attackSystem.spawnShockwaveAtPoint(data.impactX, data.impactY, data.enemy);
     });
 
     this.events.on('tweenCycleComplete', (data) => {
@@ -122,12 +147,22 @@ export default class GameScene extends Phaser.Scene {
       }
     });
 
-    this.events.on('enemyDamaged', (enemy) => {
+    this.events.on('enemyDamaged', (enemy, dmg) => {
       if (!enemy.alive) {
         this.onEnemyDefeated(enemy);
         return;
       }
       this.movementSystem.onEnemyHit(enemy);
+
+      // Notify UIScene of boss HP changes
+      if (enemy.data.isBoss) {
+        this.scene.get('UIScene').events.emit('bossHPChanged', {
+          name: enemy.name,
+          hp: enemy.hp,
+          maxHp: enemy.maxHp,
+          damageTaken: dmg || 0
+        });
+      }
     });
 
     this.events.on('phaseTransition', (data) => {
@@ -142,6 +177,25 @@ export default class GameScene extends Phaser.Scene {
 
   onEnemyDefeated(enemy) {
     this.defeatedEnemyIds.add(enemy.id);
+
+    // Notify UIScene if boss died
+    if (enemy.data.isBoss) {
+      this.scene.get('UIScene').events.emit('bossHPChanged', {
+        name: enemy.name,
+        hp: 0,
+        maxHp: enemy.maxHp,
+        damageTaken: 0
+      });
+    }
+
+    // Destroy the enemy's sprite HP bar
+    for (let i = this.spriteHPBars.length - 1; i >= 0; i--) {
+      if (this.spriteHPBars[i].entity === enemy) {
+        this.spriteHPBars[i].destroy();
+        this.spriteHPBars.splice(i, 1);
+        break;
+      }
+    }
 
     // Check reinforcements
     for (const reinf of this.reinforcements) {
@@ -162,6 +216,10 @@ export default class GameScene extends Phaser.Scene {
       const enemy = new Enemy(this, enemyData, pos);
       this.enemies.push(enemy);
       this.movementSystem.register(enemy, this.player, this);
+      if (!enemyData.isBoss) {
+        const bar = new SpriteHPBar(this, enemy, 0xee3333);
+        this.spriteHPBars.push(bar);
+      }
     }
     // Reschedule attacks to include new enemies
     this.attackSystem.enemies = this.enemies;
@@ -224,6 +282,12 @@ export default class GameScene extends Phaser.Scene {
 
     // Phase system
     this.phaseSystem.update();
+
+    // Update sprite HP bars
+    this.playerHPBar.update();
+    for (const bar of this.spriteHPBars) {
+      bar.update();
+    }
 
     // Parry effect
     this.parryEffect.update(delta);

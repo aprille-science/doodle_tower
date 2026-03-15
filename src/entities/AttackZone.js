@@ -15,6 +15,8 @@ export default class AttackZone {
     this.state = 'warning'; // 'warning' | 'active' | 'done'
     this.elapsed = 0;
     this.active = true;
+    this.lastDamageTick = 0; // timestamp of last damage dealt
+    this.damageCooldownMs = 500; // minimum ms between damage ticks
 
     this.graphics = scene.add.graphics();
     this.draw();

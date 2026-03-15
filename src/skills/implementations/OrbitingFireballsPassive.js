@@ -65,12 +65,17 @@ export class OrbitingFireballsPassive extends BasePassiveSkill {
           const hitDist = fbRadius + Math.max(bounds.width, bounds.height) / 2;
 
           if (dist < hitDist) {
-            const key = enemy.id || enemy;
+            const key = `${enemy.id || enemy}_${i}`;
             const lastHit = this.damageHitMap.get(key) || 0;
             if (now - lastHit >= cooldown) {
-              enemy.takeDamage(this.config.damage || 1);
+              const dmg = Math.round(this.config.damage || 1);
+              if (this.scene.damageSystem) {
+                this.scene.damageSystem.applyDamageToEnemy(enemy, dmg);
+              } else {
+                enemy.takeDamage(dmg);
+                this.scene.events.emit('enemyDamaged', enemy, dmg);
+              }
               this.damageHitMap.set(key, now);
-              this.scene.events.emit('enemyDamaged', enemy);
             }
             break; // One fireball hit per enemy per check
           }

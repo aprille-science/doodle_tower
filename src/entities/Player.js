@@ -153,8 +153,10 @@ export default class Player {
 
     if (!this.alive) return;
 
-    // Blink when invulnerable
-    if (this.invulnTimer > 0 && Math.floor(this.invulnTimer / 80) % 2 === 0) {
+    // Damage flash (white bright)
+    if (this._damageFlash) {
+      this.graphics.fillStyle(0xff4444, 1);
+    } else if (this.invulnTimer > 0 && Math.floor(this.invulnTimer / 80) % 2 === 0) {
       this.graphics.fillStyle(0xffffff, 0.3);
     } else {
       this.graphics.fillStyle(0xffffff, 1);

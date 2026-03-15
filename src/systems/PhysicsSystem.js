@@ -48,8 +48,21 @@ export default class PhysicsSystem {
     );
 
     if (overlap) {
-      enemy.takeDamage(player.contactDamage);
-      this.scene.events.emit('enemyDamaged', enemy);
+      // Player damages enemy via DamageSystem
+      const playerDmg = Math.round(player.contactDamage);
+      if (this.scene.damageSystem) {
+        this.scene.damageSystem.applyDamageToEnemy(enemy, playerDmg);
+      } else {
+        enemy.takeDamage(playerDmg);
+        this.scene.events.emit('enemyDamaged', enemy, playerDmg);
+      }
+
+      // Enemy damages player
+      const enemyContactDmg = enemy.data?.contactDamage || 0;
+      if (enemyContactDmg > 0) {
+        this.scene.events.emit('enemyContactDamage', { enemy, damage: enemyContactDmg });
+      }
+
       const ex = bounds.x + bounds.width / 2;
       const ey = bounds.y + bounds.height / 2;
       const dx = player.x - ex;

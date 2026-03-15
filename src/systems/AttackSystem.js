@@ -41,26 +41,33 @@ export default class AttackSystem {
     }
   }
 
+  getEffectiveDamage(pattern, enemy) {
+    const phaseData = enemy.getCurrentPhaseData();
+    const phaseMultiplier = phaseData?.attackDamageMultiplier ?? enemy.data.attackDamage ?? 1.0;
+    return Math.round(pattern.damage * phaseMultiplier);
+  }
+
   spawnAttack(patternId, enemy) {
     const pattern = this.patternCache[patternId];
     if (!pattern) return;
 
     const phaseData = enemy.getCurrentPhaseData();
     const speedMult = (phaseData && phaseData.speedMultiplier) || 1.0;
+    const effectiveDamage = this.getEffectiveDamage(pattern, enemy);
 
     if (pattern.type === 'zone') {
-      const zone = new AttackZone(this.scene, pattern);
+      const zone = new AttackZone(this.scene, { ...pattern, damage: effectiveDamage });
       this.attackZones.push(zone);
     } else if (pattern.type === 'zone_around_enemy') {
-      this.spawnZoneAroundEnemy(pattern, enemy);
+      this.spawnZoneAroundEnemy(pattern, enemy, effectiveDamage);
     } else if (pattern.type === 'projectile') {
-      this.spawnProjectile(pattern, enemy, speedMult);
+      this.spawnProjectile(pattern, enemy, speedMult, effectiveDamage);
     } else if (pattern.type === 'projectile_spread') {
-      this.spawnProjectileSpread(pattern, enemy, speedMult);
+      this.spawnProjectileSpread(pattern, enemy, speedMult, effectiveDamage);
     }
   }
 
-  spawnZoneAroundEnemy(pattern, enemy) {
+  spawnZoneAroundEnemy(pattern, enemy, effectiveDamage) {
     const enemyCol = Math.floor(enemy.x / CELL_WIDTH);
     const enemyRow = Math.floor(enemy.y / CELL_HEIGHT);
     const radius = pattern.radiusCells || 1;
@@ -78,13 +85,14 @@ export default class AttackSystem {
 
     const zone = new AttackZone(this.scene, {
       ...pattern,
+      damage: effectiveDamage,
       cells: cells,
       activeDurationMs: pattern.activeDurationMs || 800
     });
     this.attackZones.push(zone);
   }
 
-  spawnProjectile(pattern, enemy, speedMult) {
+  spawnProjectile(pattern, enemy, speedMult, effectiveDamage) {
     const warningMs = pattern.warningDurationMs || 0;
 
     this.scene.time.delayedCall(warningMs, () => {
@@ -110,6 +118,7 @@ export default class AttackSystem {
 
       const proj = new Projectile(this.scene, {
         ...pattern,
+        damage: effectiveDamage,
         worldX: spawnX,
         worldY: spawnY,
         directionDegrees: dirDeg,
@@ -120,7 +129,7 @@ export default class AttackSystem {
     });
   }
 
-  spawnProjectileSpread(pattern, enemy, speedMult) {
+  spawnProjectileSpread(pattern, enemy, speedMult, effectiveDamage) {
     const warningMs = pattern.warningDurationMs || 0;
 
     this.scene.time.delayedCall(warningMs, () => {
@@ -141,7 +150,6 @@ export default class AttackSystem {
 
       let startAngle, step;
       if (spreadAngle >= 360) {
-        // Full circle: evenly distribute
         startAngle = centerDir;
         step = 360 / count;
       } else {
@@ -153,6 +161,7 @@ export default class AttackSystem {
         const angle = startAngle + step * i;
         const proj = new Projectile(this.scene, {
           ...pattern,
+          damage: effectiveDamage,
           worldX: spawnX,
           worldY: spawnY,
           directionDegrees: angle,
@@ -164,7 +173,7 @@ export default class AttackSystem {
     });
   }
 
-  spawnShockwaveAtPoint(impactX, impactY) {
+  spawnShockwaveAtPoint(impactX, impactY, enemy) {
     const shockwavePattern = this.patternCache['pattern_shockwave'];
     if (!shockwavePattern) return;
 
@@ -184,8 +193,14 @@ export default class AttackSystem {
       }
     }
 
+    let effectiveDamage = shockwavePattern.damage;
+    if (enemy) {
+      effectiveDamage = this.getEffectiveDamage(shockwavePattern, enemy);
+    }
+
     const zone = new AttackZone(this.scene, {
       ...shockwavePattern,
+      damage: effectiveDamage,
       cells: cells,
       warningDurationMs: 0
     });
