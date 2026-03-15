@@ -1,0 +1,15 @@
+{
+  "id": "pattern_stomp",
+  "type": "zone",
+  "warningDurationMs": 800,
+  "activeDurationMs": 1200,
+  "damage": 2,
+  "bouncePlayer": true,
+  "passthrough": false,
+  "breakable": false,
+  "cells": [
+    { "col": 10, "row": 28 }, { "col": 11, "row": 28 }, { "col": 12, "row": 28 }, { "col": 13, "row": 28 },
+    { "col": 10, "row": 29 }, { "col": 11, "row": 29 }, { "col": 12, "row": 29 }, { "col": 13, "row": 29 }
+  ],
+  "color": "0xff4400"
+}
