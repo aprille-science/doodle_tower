@@ -1,0 +1,21 @@
+{
+  "id": "hunter_01",
+  "name": "Hunter",
+  "hp": 25,
+  "phases": [
+    {
+      "phase": 0,
+      "hpThreshold": 1.0,
+      "attackPatterns": ["pattern_laser_aimed"],
+      "attackIntervalMs": 2200
+    }
+  ],
+  "gridPosition": { "col": 13, "row": 2 },
+  "size": { "cols": 1, "rows": 1 },
+  "movementBehavior": {
+    "type": "strafe",
+    "preferredDistance": 6,
+    "speed": 90,
+    "durationMs": -1
+  }
+}

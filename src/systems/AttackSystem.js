@@ -1,11 +1,12 @@
 import AttackZone from '../entities/AttackZone.js';
 import Projectile from '../entities/Projectile.js';
+import { CELL_WIDTH, CELL_HEIGHT } from '../constants.js';
 
 export default class AttackSystem {
   constructor(scene, enemies, patternCache) {
     this.scene = scene;
     this.enemies = enemies;
-    this.patternCache = patternCache; // Map of pattern id -> pattern data
+    this.patternCache = patternCache;
     this.attackZones = [];
     this.projectiles = [];
     this.attackTimers = [];
@@ -25,6 +26,7 @@ export default class AttackSystem {
 
       const interval = phaseData.attackIntervalMs;
       const patterns = phaseData.attackPatterns;
+      if (!patterns || patterns.length === 0) continue;
 
       const timer = this.scene.time.addEvent({
         delay: interval,
@@ -44,41 +46,154 @@ export default class AttackSystem {
     if (!pattern) return;
 
     const phaseData = enemy.getCurrentPhaseData();
-    const speedMult = phaseData.speedMultiplier || 1.0;
+    const speedMult = (phaseData && phaseData.speedMultiplier) || 1.0;
 
     if (pattern.type === 'zone') {
       const zone = new AttackZone(this.scene, pattern);
       this.attackZones.push(zone);
+    } else if (pattern.type === 'zone_around_enemy') {
+      this.spawnZoneAroundEnemy(pattern, enemy);
     } else if (pattern.type === 'projectile') {
-      // Spawn single projectile after warning delay
-      this.scene.time.delayedCall(pattern.warningDurationMs, () => {
-        if (!enemy.alive) return;
+      this.spawnProjectile(pattern, enemy, speedMult);
+    } else if (pattern.type === 'projectile_spread') {
+      this.spawnProjectileSpread(pattern, enemy, speedMult);
+    }
+  }
+
+  spawnZoneAroundEnemy(pattern, enemy) {
+    const enemyCol = Math.floor(enemy.x / CELL_WIDTH);
+    const enemyRow = Math.floor(enemy.y / CELL_HEIGHT);
+    const radius = pattern.radiusCells || 1;
+
+    const cells = [];
+    for (let dc = -radius; dc <= radius; dc++) {
+      for (let dr = -radius; dr <= radius; dr++) {
+        const c = enemyCol + dc;
+        const r = enemyRow + dr;
+        if (c >= 0 && c < 16 && r >= 0 && r < 16) {
+          cells.push({ col: c, row: r });
+        }
+      }
+    }
+
+    const zone = new AttackZone(this.scene, {
+      ...pattern,
+      cells: cells,
+      activeDurationMs: pattern.activeDurationMs || 800
+    });
+    this.attackZones.push(zone);
+  }
+
+  spawnProjectile(pattern, enemy, speedMult) {
+    const warningMs = pattern.warningDurationMs || 0;
+
+    this.scene.time.delayedCall(warningMs, () => {
+      if (!enemy.alive) return;
+
+      let spawnX, spawnY, dirDeg;
+
+      if (pattern.spawnFromEnemy) {
+        spawnX = enemy.x;
+        spawnY = enemy.y;
+      } else {
+        spawnX = pattern.spawnGridCol * CELL_WIDTH + CELL_WIDTH / 2;
+        spawnY = pattern.spawnGridRow * CELL_HEIGHT + CELL_HEIGHT / 2;
+      }
+
+      if (pattern.aimAtPlayer && this.scene.player) {
+        const dx = this.scene.player.x - spawnX;
+        const dy = this.scene.player.y - spawnY;
+        dirDeg = Phaser.Math.RadToDeg(Math.atan2(dy, dx));
+      } else {
+        dirDeg = pattern.directionDegrees || 270;
+      }
+
+      const proj = new Projectile(this.scene, {
+        ...pattern,
+        worldX: spawnX,
+        worldY: spawnY,
+        directionDegrees: dirDeg,
+        speed: pattern.speed * speedMult,
+        pierceMode: pattern.pierceMode || 'none'
+      });
+      this.projectiles.push(proj);
+    });
+  }
+
+  spawnProjectileSpread(pattern, enemy, speedMult) {
+    const warningMs = pattern.warningDurationMs || 0;
+
+    this.scene.time.delayedCall(warningMs, () => {
+      if (!enemy.alive) return;
+
+      let spawnX, spawnY;
+      if (pattern.spawnFromEnemy) {
+        spawnX = enemy.x;
+        spawnY = enemy.y;
+      } else {
+        spawnX = pattern.spawnGridCol * CELL_WIDTH + CELL_WIDTH / 2;
+        spawnY = pattern.spawnGridRow * CELL_HEIGHT + CELL_HEIGHT / 2;
+      }
+
+      const count = pattern.count;
+      const spreadAngle = pattern.spreadAngleDegrees;
+      const centerDir = pattern.centerDirectionDegrees;
+
+      let startAngle, step;
+      if (spreadAngle >= 360) {
+        // Full circle: evenly distribute
+        startAngle = centerDir;
+        step = 360 / count;
+      } else {
+        startAngle = centerDir - spreadAngle / 2;
+        step = count > 1 ? spreadAngle / (count - 1) : 0;
+      }
+
+      for (let i = 0; i < count; i++) {
+        const angle = startAngle + step * i;
         const proj = new Projectile(this.scene, {
           ...pattern,
-          speed: pattern.speed * speedMult
+          worldX: spawnX,
+          worldY: spawnY,
+          directionDegrees: angle,
+          speed: pattern.speed * speedMult,
+          pierceMode: pattern.pierceMode || 'none'
         });
         this.projectiles.push(proj);
-      });
-    } else if (pattern.type === 'projectile_spread') {
-      this.scene.time.delayedCall(pattern.warningDurationMs, () => {
-        if (!enemy.alive) return;
-        const count = pattern.count;
-        const spreadAngle = pattern.spreadAngleDegrees;
-        const centerDir = pattern.centerDirectionDegrees;
-        const startAngle = centerDir - spreadAngle / 2;
-        const step = count > 1 ? spreadAngle / (count - 1) : 0;
+      }
+    });
+  }
 
-        for (let i = 0; i < count; i++) {
-          const angle = startAngle + step * i;
-          const proj = new Projectile(this.scene, {
-            ...pattern,
-            directionDegrees: angle,
-            speed: pattern.speed * speedMult
-          });
-          this.projectiles.push(proj);
+  spawnShockwaveAtPoint(impactX, impactY) {
+    const shockwavePattern = this.patternCache['pattern_shockwave'];
+    if (!shockwavePattern) return;
+
+    const centerCol = Math.floor(impactX / CELL_WIDTH);
+    const centerRow = Math.floor(impactY / CELL_HEIGHT);
+    const halfW = Math.floor((shockwavePattern.widthCells || 3) / 2);
+    const halfH = Math.floor((shockwavePattern.heightCells || 1) / 2);
+
+    const cells = [];
+    for (let dc = -halfW; dc <= halfW; dc++) {
+      for (let dr = -halfH; dr <= halfH; dr++) {
+        const c = centerCol + dc;
+        const r = centerRow + dr;
+        if (c >= 0 && c < 16 && r >= 0 && r < 16) {
+          cells.push({ col: c, row: r });
         }
-      });
+      }
     }
+
+    const zone = new AttackZone(this.scene, {
+      ...shockwavePattern,
+      cells: cells,
+      warningDurationMs: 0
+    });
+    this.attackZones.push(zone);
+  }
+
+  spawnEventAttack(patternId, enemy) {
+    this.spawnAttack(patternId, enemy);
   }
 
   update(delta) {

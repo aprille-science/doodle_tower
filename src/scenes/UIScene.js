@@ -14,10 +14,10 @@ export default class UIScene extends Phaser.Scene {
   }
 
   create() {
-    const panelY = ARENA_HEIGHT;
-    const barWidth = 200;
-    const barHeight = 16;
-    const leftMargin = 20;
+    const panelY = ARENA_HEIGHT; // 800
+    const barHeight = 14;
+    const leftMargin = 16;
+    const barWidth = 340;
 
     // Background panel
     this.panelBg = this.add.graphics();
@@ -26,46 +26,69 @@ export default class UIScene extends Phaser.Scene {
     this.panelBg.lineStyle(2, 0x333366, 1);
     this.panelBg.lineBetween(0, panelY, CANVAS_WIDTH, panelY);
 
-    // Enemy HP bar (top of UI panel)
-    const enemy = this.enemies[0];
-    if (enemy) {
-      this.enemyHPBar = new HPBar(
-        this,
-        leftMargin, panelY + 20,
-        barWidth * 1.5, barHeight,
-        0x9933cc,
-        enemy.name
-      );
-    }
+    // === TOP ROW (y=808 to y=835): Enemy HP + Phase ===
+    this.enemyHPBars = [];
+    const aliveEnemies = this.enemies.filter(e => e.alive);
+    const enemyBarWidth = Math.min(barWidth, (CANVAS_WIDTH - 200) / Math.max(1, aliveEnemies.length) - 10);
 
-    // Player HP bar
+    // Just create a single combined enemy HP bar for all enemies
+    this.enemyHPBar = new HPBar(
+      this,
+      leftMargin, panelY + 12,
+      CANVAS_WIDTH - 220, barHeight,
+      0x9933cc,
+      'ENEMIES'
+    );
+
+    this.phaseText = this.add.text(
+      CANVAS_WIDTH - 160, panelY + 10,
+      '',
+      { fontSize: '13px', color: '#ccccff', fontFamily: 'monospace' }
+    );
+
+    // === MIDDLE ROW (y=840 to y=870): Player HP + Shield ===
     this.playerHPBar = new HPBar(
       this,
-      leftMargin, panelY + 70,
+      leftMargin, panelY + 48,
       barWidth, barHeight,
       0xff3333,
       'HP'
     );
 
-    // Shield bar
     this.shieldBar = new ShieldBar(
       this,
-      leftMargin, panelY + 110,
+      leftMargin + barWidth + 40, panelY + 48,
       barWidth, barHeight
     );
 
-    // Phase text
-    this.phaseText = this.add.text(
-      CANVAS_WIDTH - 180, panelY + 20,
-      'Phase 1 / 3',
-      { fontSize: '14px', color: '#ccccff', fontFamily: 'monospace' }
+    this.lockoutText = this.add.text(
+      leftMargin + barWidth * 2 + 90, panelY + 50,
+      '',
+      { fontSize: '10px', color: '#ff4444', fontFamily: 'monospace' }
     );
 
-    // Shield lockout indicator
-    this.lockoutText = this.add.text(
-      leftMargin + barWidth + 60, panelY + 112,
-      '',
-      { fontSize: '11px', color: '#ff4444', fontFamily: 'monospace' }
+    // === BOTTOM ROW (y=878 to y=950): Active skill cooldown ===
+    this.cooldownGraphics = this.add.graphics();
+    this.cooldownCenterX = leftMargin + 30;
+    this.cooldownCenterY = panelY + 110;
+    this.cooldownRadius = 22;
+
+    this.skillLabel = this.add.text(
+      this.cooldownCenterX + 35, panelY + 98,
+      'MEGA FIREBALL',
+      { fontSize: '11px', color: '#ff6644', fontFamily: 'monospace' }
+    );
+
+    this.skillStatusText = this.add.text(
+      this.cooldownCenterX + 35, panelY + 114,
+      'READY',
+      { fontSize: '13px', color: '#44ff44', fontFamily: 'monospace', fontStyle: 'bold' }
+    );
+
+    this.fKeyHint = this.add.text(
+      this.cooldownCenterX + 35, panelY + 130,
+      '[F]',
+      { fontSize: '11px', color: '#888888', fontFamily: 'monospace' }
     );
   }
 
@@ -78,7 +101,7 @@ export default class UIScene extends Phaser.Scene {
     // Update shield
     this.shieldBar.update(this.player.shieldHP, this.player.maxShieldHP);
 
-    // Shield lockout indicator
+    // Shield lockout
     if (this.player.shieldLockoutTimer > 0) {
       this.lockoutText.setText('BROKEN');
     } else if (this.player.shieldHP <= 0) {
@@ -87,14 +110,76 @@ export default class UIScene extends Phaser.Scene {
       this.lockoutText.setText('');
     }
 
-    // Update enemy HP
-    const enemy = this.enemies[0];
-    if (enemy && this.enemyHPBar) {
-      this.enemyHPBar.update(enemy.hp, enemy.maxHp);
-
-      // Phase indicator
-      const totalPhases = enemy.phases.length;
-      this.phaseText.setText(`Phase ${enemy.currentPhase + 1} / ${totalPhases}`);
+    // Update enemy HP - show total HP across all enemies
+    let totalHp = 0;
+    let totalMaxHp = 0;
+    let bossEnemy = null;
+    for (const enemy of this.enemies) {
+      totalHp += Math.max(0, enemy.hp);
+      totalMaxHp += enemy.maxHp;
+      if (enemy.phases && enemy.phases.length > 1 && enemy.alive) {
+        bossEnemy = enemy;
+      }
     }
+    this.enemyHPBar.update(totalHp, totalMaxHp);
+
+    // Phase indicator for boss
+    if (bossEnemy) {
+      const totalPhases = bossEnemy.phases.length;
+      this.phaseText.setText(`Phase ${bossEnemy.currentPhase + 1} / ${totalPhases}`);
+    } else {
+      this.phaseText.setText('');
+    }
+
+    // Active skill cooldown
+    this.drawCooldownIndicator();
+  }
+
+  drawCooldownIndicator() {
+    this.cooldownGraphics.clear();
+
+    const skillManager = this.player.skillManager;
+    if (!skillManager) return;
+
+    const percent = skillManager.getActiveCooldownPercent();
+    const ready = skillManager.isActiveReady();
+
+    const cx = this.cooldownCenterX;
+    const cy = this.cooldownCenterY;
+    const r = this.cooldownRadius;
+
+    // Background circle
+    this.cooldownGraphics.fillStyle(0x222233, 1);
+    this.cooldownGraphics.fillCircle(cx, cy, r);
+
+    if (ready) {
+      // Glow effect
+      this.cooldownGraphics.lineStyle(3, 0x44ff44, 0.6 + Math.sin(Date.now() * 0.005) * 0.3);
+      this.cooldownGraphics.strokeCircle(cx, cy, r + 3);
+      this.cooldownGraphics.fillStyle(0x44ff44, 0.3);
+      this.cooldownGraphics.fillCircle(cx, cy, r);
+      this.skillStatusText.setText('READY');
+      this.skillStatusText.setColor('#44ff44');
+    } else {
+      // Cooldown arc (draining)
+      const remaining = skillManager.getActiveCooldownRemaining();
+      const seconds = (remaining / 1000).toFixed(1);
+      this.skillStatusText.setText(`${seconds}s`);
+      this.skillStatusText.setColor('#ff6644');
+
+      // Draw filled arc for remaining cooldown
+      const fillAngle = (1 - percent) * Math.PI * 2;
+      this.cooldownGraphics.fillStyle(0xff4422, 0.5);
+      this.cooldownGraphics.slice(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + fillAngle, true);
+      this.cooldownGraphics.fillPath();
+
+      // Border
+      this.cooldownGraphics.lineStyle(2, 0xff4422, 0.7);
+      this.cooldownGraphics.strokeCircle(cx, cy, r);
+    }
+
+    // Inner icon (fireball symbol)
+    this.cooldownGraphics.fillStyle(0xff6600, ready ? 1 : 0.4);
+    this.cooldownGraphics.fillCircle(cx, cy, 8);
   }
 }

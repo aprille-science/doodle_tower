@@ -1,0 +1,13 @@
+{
+  "id": "pattern_berserker_spread",
+  "type": "projectile_spread",
+  "warningDurationMs": 400,
+  "damage": 1,
+  "pierceMode": "none",
+  "speed": 200,
+  "count": 3,
+  "spreadAngleDegrees": 45,
+  "centerDirectionDegrees": 270,
+  "spawnFromEnemy": true,
+  "color": "0xff8800"
+}

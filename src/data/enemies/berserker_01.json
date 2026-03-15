@@ -1,0 +1,43 @@
+{
+  "id": "berserker_01",
+  "name": "Berserker",
+  "hp": 50,
+  "phases": [
+    {
+      "phase": 0,
+      "hpThreshold": 1.0,
+      "attackPatterns": ["pattern_berserker_spread"],
+      "attackIntervalMs": 3500
+    },
+    {
+      "phase": 1,
+      "hpThreshold": 0.4,
+      "attackPatterns": [],
+      "attackIntervalMs": 9999999
+    }
+  ],
+  "gridPosition": { "col": 3, "row": 5 },
+  "size": { "cols": 1, "rows": 1 },
+  "movementBehavior": {
+    "type": "composite",
+    "phases": [
+      {
+        "hpThreshold": 1.0,
+        "loop": true,
+        "steps": [
+          { "type": "patrol", "waypoints": [{"col":2,"row":2},{"col":13,"row":2},{"col":13,"row":10},{"col":2,"row":10}], "speed": 70, "waitMs": 400, "randomOrder": false }
+        ]
+      },
+      {
+        "hpThreshold": 0.4,
+        "loop": true,
+        "steps": [
+          { "type": "charge", "telegraphMs": 500, "speed": 480, "durationMs": 1000 }
+        ]
+      }
+    ],
+    "reactions": [
+      { "trigger": "on_phase_enter", "behavior": { "type": "teleport", "targetCol": 7, "targetRow": 1, "delayMs": 200 } }
+    ]
+  }
+}

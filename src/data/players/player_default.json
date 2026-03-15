@@ -6,5 +6,26 @@
   "initialVelocityY": -300,
   "maxSpeed": 500,
   "contactDamage": 2,
-  "radius": 12
+  "radius": 12,
+  "passive": {
+    "type": "orbiting_fireballs",
+    "count": 3,
+    "orbitRadius": 55,
+    "angularSpeed": 180,
+    "damage": 1,
+    "damageTickCooldownMs": 500,
+    "ignoreTerrain": true,
+    "color": "0xff6600",
+    "radius": 8
+  },
+  "active": {
+    "type": "mega_fireball",
+    "cooldownMs": 10000,
+    "damage": 999,
+    "enemyDamage": 40,
+    "speed": 450,
+    "radius": 18,
+    "pierceMode": "destroy_all",
+    "color": "0xff2200"
+  }
 }

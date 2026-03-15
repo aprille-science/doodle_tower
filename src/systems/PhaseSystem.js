@@ -13,6 +13,7 @@ export default class PhaseSystem {
 
       const hpRatio = enemy.hp / enemy.maxHp;
       const phases = enemy.phases;
+      if (!phases || phases.length <= 1) continue;
 
       // Find the highest phase index whose threshold we've crossed
       let targetPhase = 0;
@@ -34,9 +35,10 @@ export default class PhaseSystem {
 
     // Pause attack system during transition
     this.attackSystem.pauseForTransition(PHASE_TRANSITION_PAUSE_MS);
-
-    // Clear current attacks
     this.attackSystem.clearAll();
+
+    // Emit phase transition event for movement system
+    this.scene.events.emit('phaseTransition', { enemy, phase: newPhase });
 
     // After transition, reschedule attacks
     this.scene.time.delayedCall(PHASE_TRANSITION_PAUSE_MS, () => {
