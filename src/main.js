@@ -8,9 +8,15 @@ const config = {
   type: Phaser.WEBGL,
   width: CANVAS_WIDTH,
   height: CANVAS_HEIGHT,
-  parent: document.body,
   backgroundColor: '#1a1a2e',
   scene: [BootScene, GameScene, UIScene],
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    parent: document.body,
+    width: CANVAS_WIDTH,
+    height: CANVAS_HEIGHT
+  },
   physics: {
     default: 'arcade',
     arcade: {
