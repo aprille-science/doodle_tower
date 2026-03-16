@@ -117,7 +117,8 @@ export default class UIScene extends Phaser.Scene {
       this.bossDmgTween = null;
     }
     this.tweens.killAll();
-    this.events.removeAllListeners();
+    // Remove only custom listeners (NOT removeAllListeners — that strips Phaser internals)
+    this.events.off('bossHPChanged');
     this.player = null;
     this.enemies = null;
   }
