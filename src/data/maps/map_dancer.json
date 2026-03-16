@@ -1,0 +1,28 @@
+{
+  "id": "map_dancer",
+  "name": "Dance Floor",
+  "description": "Dancers glide back and forth, unleashing volleys at the peak of each sweep.",
+  "enemyPreview": "dancer_01",
+  "difficulty": 2,
+  "winCondition": "defeat_all_enemies",
+  "initialEnemies": [
+    { "enemyId": "dancer_01", "gridPosition": { "col": 3,  "row": 1 } },
+    { "enemyId": "dancer_01", "gridPosition": { "col": 11, "row": 3 } },
+    { "enemyId": "dancer_01", "gridPosition": { "col": 7,  "row": 2 } }
+  ],
+  "reinforcements": [],
+  "initialTerrain": [
+    {
+      "type": "breakable",
+      "hp": 3,
+      "damage": 1,
+      "bouncePlayer": true,
+      "passthrough": false,
+      "cells": [
+        { "col": 3, "row": 8 }, { "col": 4, "row": 8 },
+        { "col": 11, "row": 8 }, { "col": 12, "row": 8 }
+      ],
+      "color": "0x888888"
+    }
+  ]
+}

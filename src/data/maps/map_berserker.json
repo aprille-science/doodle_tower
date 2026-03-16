@@ -1,0 +1,38 @@
+{
+  "id": "map_berserker",
+  "name": "Berserker's Arena",
+  "description": "A raging berserker patrols the arena. Push it to low HP and survive the charge.",
+  "enemyPreview": "berserker_01",
+  "difficulty": 4,
+  "winCondition": "defeat_all_enemies",
+  "initialEnemies": [
+    { "enemyId": "berserker_01", "gridPosition": { "col": 7, "row": 3 } },
+    { "enemyId": "berserker_01", "gridPosition": { "col": 3, "row": 5 } }
+  ],
+  "reinforcements": [],
+  "initialTerrain": [
+    {
+      "type": "breakable",
+      "hp": 4,
+      "damage": 1,
+      "bouncePlayer": true,
+      "passthrough": false,
+      "cells": [
+        { "col": 5, "row": 9 }, { "col": 6, "row": 9 }, { "col": 7, "row": 9 },
+        { "col": 8, "row": 9 }, { "col": 9, "row": 9 }, { "col": 10, "row": 9 }
+      ],
+      "color": "0x888888"
+    },
+    {
+      "type": "damage",
+      "hp": -1,
+      "damage": 3,
+      "bouncePlayer": false,
+      "passthrough": true,
+      "cells": [
+        { "col": 0, "row": 6 }, { "col": 15, "row": 6 }
+      ],
+      "color": "0xff6600"
+    }
+  ]
+}

@@ -1,6 +1,9 @@
 {
   "id": "map_01",
   "name": "The Vault",
+  "description": "All enemy types converge in the ultimate gauntlet. The Stone Sentinel awaits.",
+  "enemyPreview": "boss_01",
+  "difficulty": 5,
   "winCondition": "defeat_all_enemies",
   "initialEnemies": [
     { "enemyId": "wanderer_01",  "gridPosition": { "col": 2,  "row": 2  } },

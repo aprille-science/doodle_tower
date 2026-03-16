@@ -25,8 +25,12 @@ export default class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' });
   }
 
+  init(data) {
+    this.selectedMapId = (data && data.mapId) || 'map_01';
+  }
+
   create() {
-    const mapData = this.cache.json.get('map_01');
+    const mapData = this.cache.json.get(this.selectedMapId);
     const playerData = this.cache.json.get('player_default');
 
     // Load all attack pattern cache
@@ -366,15 +370,19 @@ export default class GameScene extends Phaser.Scene {
       strokeThickness: 4
     }).setOrigin(0.5).setDepth(995);
 
-    this.add.text(CANVAS_WIDTH / 2, ARENA_HEIGHT / 2 + 60, 'Press R to restart', {
-      fontSize: '18px',
+    this.add.text(CANVAS_WIDTH / 2, ARENA_HEIGHT / 2 + 50, 'Press R to retry  |  Press M for menu', {
+      fontSize: '15px',
       color: '#ffffff',
       fontFamily: 'monospace'
     }).setOrigin(0.5).setDepth(995);
 
     this.input.keyboard.once('keydown-R', () => {
       this.scene.stop('UIScene');
-      this.scene.restart();
+      this.scene.restart({ mapId: this.selectedMapId });
+    });
+    this.input.keyboard.once('keydown-M', () => {
+      this.scene.stop('UIScene');
+      this.scene.start('TitleScene');
     });
   }
 }

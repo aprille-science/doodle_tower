@@ -1,0 +1,39 @@
+{
+  "id": "map_wanderer",
+  "name": "Wanderer's Path",
+  "description": "A trio of wanderers roam aimlessly, stomping the ground beneath them.",
+  "enemyPreview": "wanderer_01",
+  "difficulty": 1,
+  "winCondition": "defeat_all_enemies",
+  "initialEnemies": [
+    { "enemyId": "wanderer_01", "gridPosition": { "col": 3,  "row": 2 } },
+    { "enemyId": "wanderer_01", "gridPosition": { "col": 8,  "row": 4 } },
+    { "enemyId": "wanderer_01", "gridPosition": { "col": 12, "row": 2 } }
+  ],
+  "reinforcements": [
+    {
+      "trigger": "enemy_defeated",
+      "targetEnemyId": "wanderer_01",
+      "spawnEnemyId": "wanderer_01",
+      "spawnCount": 1,
+      "spawnAfterMs": 3000,
+      "positions": [
+        { "col": 7, "row": 1 }
+      ]
+    }
+  ],
+  "initialTerrain": [
+    {
+      "type": "breakable",
+      "hp": 2,
+      "damage": 1,
+      "bouncePlayer": true,
+      "passthrough": false,
+      "cells": [
+        { "col": 5, "row": 10 }, { "col": 6, "row": 10 }, { "col": 7, "row": 10 },
+        { "col": 8, "row": 10 }, { "col": 9, "row": 10 }
+      ],
+      "color": "0x888888"
+    }
+  ]
+}
