@@ -28,7 +28,12 @@ export default class BootScene extends Phaser.Scene {
     this.load.json('pattern_berserker_spread', 'src/data/attack_patterns/pattern_berserker_spread.json');
     this.load.json('pattern_shockwave', 'src/data/attack_patterns/pattern_shockwave.json');
 
-    // Map
+    // Maps
+    this.load.json('map_wanderer', 'src/data/maps/map_wanderer.json');
+    this.load.json('map_dancer', 'src/data/maps/map_dancer.json');
+    this.load.json('map_hunter', 'src/data/maps/map_hunter.json');
+    this.load.json('map_guardian', 'src/data/maps/map_guardian.json');
+    this.load.json('map_berserker', 'src/data/maps/map_berserker.json');
     this.load.json('map_01', 'src/data/maps/map_01.json');
 
     // Loading text
@@ -39,6 +44,6 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start('GameScene');
+    this.scene.start('TitleScene');
   }
 }
