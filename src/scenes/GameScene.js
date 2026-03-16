@@ -21,6 +21,7 @@ import TerrainTile from '../entities/TerrainTile.js';
 import ParryEffect from '../ui/ParryEffect.js';
 import { SkillManager } from '../skills/SkillManager.js';
 import { SpriteHPBar } from '../ui/SpriteHPBar.js';
+import { TerrainShieldSystem } from '../systems/TerrainShieldSystem.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -122,6 +123,12 @@ export default class GameScene extends Phaser.Scene {
     this.movementSystem = new MovementSystem(this.obstacleMap, this.pathfinder, this.steeringSystem);
     for (const enemy of this.enemies) {
       this.movementSystem.register(enemy, this.player, this);
+    }
+
+    // Initialize terrain shield system
+    this.terrainShieldSystem = new TerrainShieldSystem(this);
+    for (const enemy of this.enemies) {
+      this.terrainShieldSystem.register(enemy);
     }
 
     // Initialize combat systems
@@ -271,6 +278,7 @@ export default class GameScene extends Phaser.Scene {
       const enemy = new Enemy(this, enemyData, pos);
       this.enemies.push(enemy);
       this.movementSystem.register(enemy, this.player, this);
+      this.terrainShieldSystem.register(enemy);
       if (!enemyData.isBoss) {
         const bar = new SpriteHPBar(this, enemy, 0xee3333);
         this.spriteHPBars.push(bar);
@@ -363,6 +371,9 @@ export default class GameScene extends Phaser.Scene {
 
     // Terrain effect system (blaze/frost/electric tiles)
     this.terrainEffectManager.update(delta);
+
+    // Terrain shield system (follow enemies)
+    this.terrainShieldSystem.update();
 
     // Damage system
     this.damageSystem.update(

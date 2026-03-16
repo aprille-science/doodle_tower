@@ -40,6 +40,8 @@ export class ObstacleMap {
     }
     for (const tile of terrainTiles) {
       if (!tile.active) continue;
+      // Skip shield tiles — they move with enemies
+      if (tile._shieldOwner) continue;
       // Hard-blocked: not passthrough AND not bouncy-only
       if (!tile.passthrough && tile.bouncePlayer) {
         this.setBlocked(tile.col, tile.row, true);

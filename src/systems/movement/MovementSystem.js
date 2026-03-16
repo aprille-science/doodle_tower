@@ -41,13 +41,18 @@ export class MovementSystem {
       // Check status effects for movement modification
       const statusMgr = scene.statusEffectManager;
       if (statusMgr && statusMgr.isFrozen(enemy)) {
-        // Frozen: skip movement entirely
+        // Frozen: skip movement entirely and pause tweens
+        if (enemy._movementBehavior) {
+          enemy._movementBehavior.setSpeedScale(0);
+        }
         enemy.draw();
         continue;
       }
 
       const speedMult = statusMgr ? statusMgr.getSpeedMultiplier(enemy) : 1;
       if (enemy._movementBehavior) {
+        // Apply speed scale to tween-based behaviors
+        enemy._movementBehavior.setSpeedScale(speedMult);
         // Pass speed multiplier through delta scaling
         const effectiveDt = dt * speedMult;
         enemy._movementBehavior.update(effectiveDt, enemy, player, scene);

@@ -49,6 +49,12 @@ export class TweenYBehavior extends BaseBehavior {
     enemy.navAgent.moveDirectly(0, 0, dtSec, scene.enemies || []);
   }
 
+  setSpeedScale(scale) {
+    if (this.tween) {
+      this.tween.timeScale = scale;
+    }
+  }
+
   exit(enemy, player, scene) {
     if (this.tween) {
       this.tween.destroy();

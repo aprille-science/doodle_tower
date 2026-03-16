@@ -138,6 +138,14 @@ export class BehaviorStateMachine {
     }
   }
 
+  setSpeedScale(scale) {
+    if (this.inReaction && this.reactionBehavior) {
+      this.reactionBehavior.setSpeedScale(scale);
+    } else if (this.currentBehavior) {
+      this.currentBehavior.setSpeedScale(scale);
+    }
+  }
+
   startReaction(reaction, enemy, player, scene) {
     if (this.currentBehavior) {
       this.currentBehavior.exit(enemy, player, scene);

@@ -69,6 +69,8 @@ export default class DamageSystem {
       const projRow = proj.getRow();
       for (const tile of terrainTiles) {
         if (!tile.active || !proj.active) continue;
+        // Enemy projectiles pass through shield tiles
+        if (!proj.isPlayerProjectile && tile._shieldOwner) continue;
         if (tile.col === projCol && tile.row === projRow) {
           proj.resolveTerrainHit(tile);
         }

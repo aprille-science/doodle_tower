@@ -15,4 +15,9 @@ export class BaseBehavior {
   }
 
   exit(enemy, player, scene) {}
+
+  /** Called by MovementSystem to apply status-effect speed scaling (0 = frozen). */
+  setSpeedScale(scale) {
+    // Override in tween-based behaviors to control tween.timeScale
+  }
 }

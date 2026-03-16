@@ -1,0 +1,75 @@
+{
+  "id": "boss_sentinel",
+  "name": "Iron Bastion",
+  "hp": 800,
+  "contactDamage": 12,
+  "attackDamage": 1.2,
+  "isBoss": true,
+  "statusImmunities": ["frozen"],
+  "phases": [
+    {
+      "phase": 0,
+      "hpThreshold": 1.0,
+      "attackDamageMultiplier": 1.0,
+      "attackPatterns": ["pattern_spread", "pattern_stomp"],
+      "attackIntervalMs": 3000
+    },
+    {
+      "phase": 1,
+      "hpThreshold": 0.5,
+      "attackDamageMultiplier": 1.5,
+      "attackPatterns": ["pattern_spread", "pattern_laser"],
+      "attackIntervalMs": 2200,
+      "speedMultiplier": 1.3
+    },
+    {
+      "phase": 2,
+      "hpThreshold": 0.2,
+      "attackDamageMultiplier": 2.0,
+      "attackPatterns": ["pattern_spread", "pattern_laser", "pattern_stomp"],
+      "attackIntervalMs": 1600,
+      "speedMultiplier": 1.5
+    }
+  ],
+  "size": { "cols": 2, "rows": 2 },
+  "terrainShield": {
+    "sides": ["top", "bottom", "left", "right"],
+    "hp": 5,
+    "color": "0x667788"
+  },
+  "movementBehavior": {
+    "type": "composite",
+    "phases": [
+      {
+        "hpThreshold": 1.0,
+        "loop": true,
+        "steps": [
+          { "type": "tweenX", "durationMs": 4500, "easing": "Sine.easeInOut", "bounceAtEdge": true },
+          { "type": "chase", "speed": 60, "predictionFactor": 0.3, "durationMs": 2000 }
+        ]
+      },
+      {
+        "hpThreshold": 0.5,
+        "loop": true,
+        "steps": [
+          { "type": "charge", "telegraphMs": 800, "speed": 350, "durationMs": 900 },
+          { "type": "strafe", "preferredDistance": 5, "speed": 100, "durationMs": 2500 },
+          { "type": "orbit", "centerCol": null, "centerRow": null, "radius": 3, "angularSpeed": 80, "durationMs": 3000 }
+        ]
+      },
+      {
+        "hpThreshold": 0.2,
+        "loop": true,
+        "steps": [
+          { "type": "teleport", "targetCol": null, "targetRow": null, "delayMs": 300 },
+          { "type": "charge", "telegraphMs": 500, "speed": 500, "durationMs": 600 },
+          { "type": "chase", "speed": 140, "predictionFactor": 0.6, "durationMs": 2000 }
+        ]
+      }
+    ],
+    "reactions": [
+      { "trigger": "on_hit", "behavior": { "type": "strafe", "preferredDistance": 4, "speed": 180, "durationMs": 500 }, "cooldownMs": 1500 },
+      { "trigger": "on_phase_enter", "behavior": { "type": "teleport", "targetCol": 7, "targetRow": 2, "delayMs": 200 } }
+    ]
+  }
+}
