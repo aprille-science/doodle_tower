@@ -15,14 +15,39 @@
   ],
   "reinforcements": [
     {
-      "trigger": "enemy_defeated",
-      "targetEnemyId": "wanderer_01",
+      "trigger": "boss_phase",
+      "bossId": "boss_01",
+      "phase": 1,
       "spawnEnemyId": "wanderer_01",
       "spawnCount": 2,
-      "spawnAfterMs": 2000,
+      "spawnAfterMs": 1500,
+      "maxTriggers": 1,
       "positions": [
         { "col": 1, "row": 3 },
         { "col": 13, "row": 3 }
+      ]
+    },
+    {
+      "trigger": "boss_phase",
+      "bossId": "boss_01",
+      "phase": 2,
+      "spawnEnemyId": "hunter_01",
+      "spawnCount": 2,
+      "spawnAfterMs": 1500,
+      "maxTriggers": 1,
+      "positions": [
+        { "col": 2, "row": 1 },
+        { "col": 13, "row": 1 }
+      ]
+    },
+    {
+      "trigger": "timed",
+      "timeMs": 30000,
+      "spawnEnemyId": "dancer_01",
+      "spawnCount": 1,
+      "maxTriggers": 1,
+      "positions": [
+        { "col": 7, "row": 2 }
       ]
     }
   ],

@@ -10,7 +10,18 @@
     { "enemyId": "hunter_01", "gridPosition": { "col": 13, "row": 1 } },
     { "enemyId": "hunter_01", "gridPosition": { "col": 7,  "row": 3 } }
   ],
-  "reinforcements": [],
+  "reinforcements": [
+    {
+      "trigger": "timed",
+      "timeMs": 20000,
+      "spawnEnemyId": "hunter_01",
+      "spawnCount": 1,
+      "maxTriggers": 1,
+      "positions": [
+        { "col": 7, "row": 1 }
+      ]
+    }
+  ],
   "initialTerrain": [
     {
       "type": "breakable",

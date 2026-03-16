@@ -76,7 +76,6 @@ export default class GameScene extends Phaser.Scene {
 
     // Create enemies
     this.enemies = [];
-    this.reinforcements = mapData.reinforcements || [];
     this.defeatedEnemyIds = new Set();
 
     for (const enemyDef of mapData.initialEnemies) {
@@ -85,6 +84,9 @@ export default class GameScene extends Phaser.Scene {
       const enemy = new Enemy(this, enemyData, enemyDef.gridPosition);
       this.enemies.push(enemy);
     }
+
+    // Initialize reinforcement system
+    this.setupReinforcements(mapData.reinforcements || []);
 
     // Create sprite HP bars
     this.spriteHPBars = [];
@@ -171,6 +173,7 @@ export default class GameScene extends Phaser.Scene {
 
     this.events.on('phaseTransition', (data) => {
       this.movementSystem.onPhaseEnter(data.enemy);
+      this.onBossPhaseChanged(data.enemy, data.phase);
     });
 
     // Game state
@@ -220,6 +223,45 @@ export default class GameScene extends Phaser.Scene {
     this.attackSystem.clearAll();
   }
 
+  // ----------------------------------------------------------------
+  // Reinforcement system
+  // ----------------------------------------------------------------
+  setupReinforcements(reinfDefs) {
+    this.reinfRules = reinfDefs.map(r => ({ ...r, _triggerCount: 0 }));
+
+    // Schedule timed reinforcements
+    for (const rule of this.reinfRules) {
+      if (rule.trigger === 'timed') {
+        this.time.delayedCall(rule.timeMs, () => {
+          this.fireReinforcement(rule);
+        });
+      }
+    }
+  }
+
+  fireReinforcement(rule) {
+    if (this.frozen) return;
+    const max = rule.maxTriggers !== undefined ? rule.maxTriggers : 1;
+    if (rule._triggerCount >= max) return;
+    rule._triggerCount++;
+
+    const count = Math.min(rule.spawnCount, rule.positions.length);
+    for (let i = 0; i < count; i++) {
+      const enemyData = this.cache.json.get(rule.spawnEnemyId);
+      if (!enemyData) continue;
+      const pos = rule.positions[i];
+      const enemy = new Enemy(this, enemyData, pos);
+      this.enemies.push(enemy);
+      this.movementSystem.register(enemy, this.player, this);
+      if (!enemyData.isBoss) {
+        const bar = new SpriteHPBar(this, enemy, 0xee3333);
+        this.spriteHPBars.push(bar);
+      }
+    }
+    this.attackSystem.enemies = this.enemies;
+    this.attackSystem.reschedule();
+  }
+
   onEnemyDefeated(enemy) {
     this.defeatedEnemyIds.add(enemy.id);
 
@@ -242,35 +284,23 @@ export default class GameScene extends Phaser.Scene {
       }
     }
 
-    // Check reinforcements
-    for (const reinf of this.reinforcements) {
-      if (reinf.trigger === 'enemy_defeated' && reinf.targetEnemyId === enemy.id) {
-        this.time.delayedCall(reinf.spawnAfterMs || 2000, () => {
-          if (this.frozen) return;
-          this.spawnReinforcements(reinf);
-        });
+    // Check enemy_defeated reinforcements
+    for (const rule of this.reinfRules) {
+      if (rule.trigger === 'enemy_defeated' && rule.targetEnemyId === enemy.id) {
+        const delay = rule.spawnAfterMs || 2000;
+        this.time.delayedCall(delay, () => this.fireReinforcement(rule));
       }
     }
   }
 
-  spawnReinforcements(reinf) {
-    if (this.frozen) return;
-    const count = Math.min(reinf.spawnCount, reinf.positions.length);
-    for (let i = 0; i < count; i++) {
-      const enemyData = this.cache.json.get(reinf.spawnEnemyId);
-      if (!enemyData) continue;
-      const pos = reinf.positions[i];
-      const enemy = new Enemy(this, enemyData, pos);
-      this.enemies.push(enemy);
-      this.movementSystem.register(enemy, this.player, this);
-      if (!enemyData.isBoss) {
-        const bar = new SpriteHPBar(this, enemy, 0xee3333);
-        this.spriteHPBars.push(bar);
+  onBossPhaseChanged(enemy, newPhase) {
+    // Check boss_phase reinforcements
+    for (const rule of this.reinfRules) {
+      if (rule.trigger === 'boss_phase' && rule.bossId === enemy.id && rule.phase === newPhase) {
+        const delay = rule.spawnAfterMs || 1000;
+        this.time.delayedCall(delay, () => this.fireReinforcement(rule));
       }
     }
-    // Reschedule attacks to include new enemies
-    this.attackSystem.enemies = this.enemies;
-    this.attackSystem.reschedule();
   }
 
   onTerrainDestroyed() {
@@ -343,9 +373,13 @@ export default class GameScene extends Phaser.Scene {
     // Parry effect
     this.parryEffect.update(delta);
 
-    // Win condition
+    // Win condition — all enemies dead AND no pending reinforcements
     const allDead = this.enemies.every(e => !e.alive);
-    if (allDead) {
+    const pendingReinf = this.reinfRules.some(r => {
+      const max = r.maxTriggers !== undefined ? r.maxTriggers : 1;
+      return r._triggerCount < max;
+    });
+    if (allDead && !pendingReinf) {
       this.gameWon = true;
       this.freezeGame();
       this.showEndText('YOU WIN!', 0x00ff00);
