@@ -1,0 +1,30 @@
+{
+  "id": "player_storm_archer",
+  "name": "Storm Archer",
+  "hp": 80,
+  "shieldHP": 30,
+  "initialVelocityX": 220,
+  "initialVelocityY": -320,
+  "maxSpeed": 550,
+  "contactDamage": 3,
+  "radius": 10,
+  "passive": {
+    "type": "storm_bolt",
+    "intervalMs": 3000,
+    "damage": 15,
+    "speed": 600,
+    "radius": 5,
+    "color": "0xffee00",
+    "paralyzeDurationMs": 1000
+  },
+  "active": {
+    "type": "thunder_strike",
+    "cooldownMs": 12000,
+    "damage": 100,
+    "terrainDamage": 50,
+    "speed": 400,
+    "radius": 36,
+    "color": "0xffee00",
+    "paralyzeDurationMs": 5000
+  }
+}

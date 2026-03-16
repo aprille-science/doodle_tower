@@ -1,0 +1,22 @@
+{
+  "id": "player_frost_knight",
+  "name": "Frost Knight",
+  "hp": 120,
+  "shieldHP": 60,
+  "initialVelocityX": 180,
+  "initialVelocityY": -280,
+  "maxSpeed": 450,
+  "contactDamage": 6,
+  "radius": 14,
+  "passive": {
+    "type": "ice_armor",
+    "damageReduction": 0.5
+  },
+  "active": {
+    "type": "frost_nova",
+    "cooldownMs": 10000,
+    "damage": 30,
+    "radiusTiles": 5,
+    "freezeDurationMs": 5000
+  }
+}

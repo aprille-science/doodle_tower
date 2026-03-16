@@ -37,8 +37,20 @@ export class MovementSystem {
     // Update each enemy's behavior
     for (const enemy of this.registeredEnemies) {
       if (!enemy.alive) continue;
+
+      // Check status effects for movement modification
+      const statusMgr = scene.statusEffectManager;
+      if (statusMgr && statusMgr.isFrozen(enemy)) {
+        // Frozen: skip movement entirely
+        enemy.draw();
+        continue;
+      }
+
+      const speedMult = statusMgr ? statusMgr.getSpeedMultiplier(enemy) : 1;
       if (enemy._movementBehavior) {
-        enemy._movementBehavior.update(dt, enemy, player, scene);
+        // Pass speed multiplier through delta scaling
+        const effectiveDt = dt * speedMult;
+        enemy._movementBehavior.update(effectiveDt, enemy, player, scene);
       }
       enemy.draw();
     }

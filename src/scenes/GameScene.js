@@ -8,6 +8,8 @@ import DamageSystem from '../systems/DamageSystem.js';
 import ShieldSystem from '../systems/ShieldSystem.js';
 import AttackSystem from '../systems/AttackSystem.js';
 import PhaseSystem from '../systems/PhaseSystem.js';
+import { StatusEffectManager } from '../systems/StatusEffectManager.js';
+import { BlazeTrailManager } from '../systems/BlazeTrailManager.js';
 import { ObstacleMap } from '../systems/navigation/ObstacleMap.js';
 import { Pathfinder } from '../systems/navigation/Pathfinder.js';
 import { SteeringSystem } from '../systems/navigation/SteeringSystem.js';
@@ -27,11 +29,14 @@ export default class GameScene extends Phaser.Scene {
 
   init(data) {
     this.selectedMapId = (data && data.mapId) || 'map_01';
+    this.selectedCharacterId = (data && data.characterId)
+      || this.registry.get('selectedCharacter')
+      || 'player_default';
   }
 
   create() {
     const mapData = this.cache.json.get(this.selectedMapId);
-    const playerData = this.cache.json.get('player_default');
+    const playerData = this.cache.json.get(this.selectedCharacterId);
 
     // Load all attack pattern cache
     this.patternCache = {};
@@ -87,6 +92,14 @@ export default class GameScene extends Phaser.Scene {
 
     // Initialize reinforcement system
     this.setupReinforcements(mapData.reinforcements || []);
+
+    // Initialize status effect system
+    this.statusEffectManager = new StatusEffectManager(this);
+
+    // Initialize blaze trail system (for Flame Magician)
+    this.blazeTrailManager = new BlazeTrailManager(this);
+    // Alias for DamageSystem blaze tile checks
+    this.blazeTiles = this.blazeTrailManager.tiles;
 
     // Create sprite HP bars
     this.spriteHPBars = [];
@@ -148,6 +161,7 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('tweenCycleComplete', (data) => {
       const enemy = data.enemy;
       if (!enemy.alive) return;
+      if (this.statusEffectManager.isFrozen(enemy)) return; // Frozen enemies can't attack
       if (enemy.attackOnEvent && enemy.attackOnEvent.event === 'tweenCycleComplete') {
         this.attackSystem.spawnEventAttack(enemy.attackOnEvent.pattern, enemy);
       }
@@ -187,7 +201,7 @@ export default class GameScene extends Phaser.Scene {
 
     // ESC key for pause
     this.input.keyboard.on('keydown-ESC', () => {
-      if (this.frozen) return; // can't unpause after game over
+      if (this.frozen) return;
       this.togglePause();
     });
   }
@@ -196,6 +210,9 @@ export default class GameScene extends Phaser.Scene {
     this.gamePaused = !this.gamePaused;
 
     if (this.gamePaused) {
+      // Pause all scene timers (attack timers, delayed calls)
+      this.time.paused = true;
+
       // Show pause overlay
       this.pauseOverlay = this.add.graphics();
       this.pauseOverlay.fillStyle(0x000000, 0.5);
@@ -211,7 +228,9 @@ export default class GameScene extends Phaser.Scene {
         strokeThickness: 4
       }).setOrigin(0.5).setDepth(991);
     } else {
-      // Remove pause overlay
+      // Resume scene timers
+      this.time.paused = false;
+
       if (this.pauseOverlay) { this.pauseOverlay.destroy(); this.pauseOverlay = null; }
       if (this.pauseText) { this.pauseText.destroy(); this.pauseText = null; }
     }
@@ -219,7 +238,8 @@ export default class GameScene extends Phaser.Scene {
 
   freezeGame() {
     this.frozen = true;
-    this.gamePaused = false; // clear pause state
+    this.gamePaused = false;
+    this.time.paused = false;
     this.attackSystem.clearAll();
   }
 
@@ -265,6 +285,9 @@ export default class GameScene extends Phaser.Scene {
   onEnemyDefeated(enemy) {
     this.defeatedEnemyIds.add(enemy.id);
 
+    // Clean up status effects for dead enemy
+    this.statusEffectManager.clearEnemy(enemy);
+
     // Notify UIScene if boss died
     if (enemy.data.isBoss) {
       this.scene.get('UIScene').events.emit('bossHPChanged', {
@@ -294,7 +317,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
   onBossPhaseChanged(enemy, newPhase) {
-    // Check boss_phase reinforcements
     for (const rule of this.reinfRules) {
       if (rule.trigger === 'boss_phase' && rule.bossId === enemy.id && rule.phase === newPhase) {
         const delay = rule.spawnAfterMs || 1000;
@@ -309,10 +331,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update(time, delta) {
-    // Frozen = game over/won — nothing updates
     if (this.frozen) return;
-
-    // Paused = ESC pause — nothing updates
     if (this.gamePaused) return;
 
     // Update platform
@@ -341,7 +360,15 @@ export default class GameScene extends Phaser.Scene {
     // Attack system
     this.attackSystem.update(delta);
 
-    // Damage system (now passes enemies for player projectile hits)
+    // Status effect system
+    this.statusEffectManager.update(delta);
+
+    // Blaze trail system
+    this.blazeTrailManager.update(delta);
+    // Keep alias in sync (array reference changes on splice)
+    this.blazeTiles = this.blazeTrailManager.tiles;
+
+    // Damage system
     this.damageSystem.update(
       this.terrainTiles,
       this.attackSystem.attackZones,
@@ -412,7 +439,7 @@ export default class GameScene extends Phaser.Scene {
 
     this.input.keyboard.once('keydown-R', () => {
       this.scene.stop('UIScene');
-      this.scene.restart({ mapId: this.selectedMapId });
+      this.scene.restart({ mapId: this.selectedMapId, characterId: this.selectedCharacterId });
     });
     this.input.keyboard.once('keydown-M', () => {
       this.scene.stop('UIScene');

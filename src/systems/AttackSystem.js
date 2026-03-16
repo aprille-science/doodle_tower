@@ -33,6 +33,8 @@ export default class AttackSystem {
         loop: true,
         callback: () => {
           if (this.paused || !enemy.alive) return;
+          // Frozen enemies cannot attack
+          if (this.scene.statusEffectManager && this.scene.statusEffectManager.isFrozen(enemy)) return;
           const patternId = Phaser.Utils.Array.GetRandom(patterns);
           this.spawnAttack(patternId, enemy);
         }

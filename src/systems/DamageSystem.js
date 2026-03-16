@@ -11,6 +11,7 @@ export default class DamageSystem {
   update(terrainTiles, attackZones, projectiles, physicsSystem, enemies) {
     if (!this.player.alive) return;
 
+    const statusMgr = this.scene.statusEffectManager;
     const playerCol = this.player.getCol();
     const playerRow = this.player.getRow();
     const now = Date.now();
@@ -35,7 +36,12 @@ export default class DamageSystem {
 
       for (const cell of zone.cells) {
         if (cell.col === playerCol && cell.row === playerRow) {
-          this.applyDamageToPlayer(zone.damage, this.player.x, this.player.y);
+          let dmg = zone.damage;
+          // Apply POISONED damage-dealt reduction from the zone's source enemy
+          if (zone.sourceEnemy && statusMgr) {
+            dmg *= statusMgr.getDamageDealtMultiplier(zone.sourceEnemy);
+          }
+          this.applyDamageToPlayer(dmg, this.player.x, this.player.y);
           zone.lastDamageTick = now;
           break;
         }
@@ -47,9 +53,14 @@ export default class DamageSystem {
       if (!proj.active) continue;
 
       // Enemy projectile vs player
-      if (physicsSystem.checkProjectilePlayerCollision(proj, this.player)) {
+      if (!proj.isPlayerProjectile && physicsSystem.checkProjectilePlayerCollision(proj, this.player)) {
         if (proj.resolveEnemyHit(this.player)) {
-          this.applyDamageToPlayer(proj.getEffectiveDamage(this.player), proj.x, proj.y);
+          let dmg = proj.getEffectiveDamage(this.player);
+          // Apply POISONED damage-dealt reduction from source enemy
+          if (proj.sourceEnemy && statusMgr) {
+            dmg *= statusMgr.getDamageDealtMultiplier(proj.sourceEnemy);
+          }
+          this.applyDamageToPlayer(dmg, proj.x, proj.y);
         }
       }
 
@@ -69,7 +80,34 @@ export default class DamageSystem {
           if (!enemy.alive || !proj.active) continue;
           if (physicsSystem.checkProjectileEnemyCollision(proj, enemy)) {
             if (proj.resolveEnemyHit(enemy)) {
-              this.applyDamageToEnemy(enemy, proj.getEffectiveEnemyDamage(enemy));
+              let dmg = proj.getEffectiveEnemyDamage(enemy);
+              // Apply POISONED damage-taken multiplier
+              if (statusMgr) {
+                dmg *= statusMgr.getDamageTakenMultiplier(enemy);
+              }
+              this.applyDamageToEnemy(enemy, dmg);
+
+              // Apply status effect from projectile
+              if (proj.inflictStatus && statusMgr) {
+                statusMgr.applyStatus(enemy, proj.inflictStatus.type, proj.inflictStatus.durationMs);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 4. Blaze tile damage to enemies
+    if (this.scene.blazeTiles && enemies) {
+      for (const blaze of this.scene.blazeTiles) {
+        if (!blaze.active) continue;
+        for (const enemy of enemies) {
+          if (!enemy.alive) continue;
+          const eCol = Math.floor(enemy.x / 50); // CELL_WIDTH
+          const eRow = Math.floor(enemy.y / 50); // CELL_HEIGHT
+          if (eCol === blaze.col && eRow === blaze.row) {
+            if (statusMgr) {
+              statusMgr.applyStatus(enemy, 'burned', blaze.burnDurationMs || 5000);
             }
           }
         }
@@ -81,7 +119,8 @@ export default class DamageSystem {
     if (this.player.invulnTimer > 0) return;
     if (this.shieldSystem.checkParry()) return;
 
-    const dmg = Math.round(amount);
+    // Apply player damage reduction
+    let dmg = Math.round(amount * (this.player.damageReduction || 1));
     const nx = worldX || this.player.x;
     const ny = (worldY || this.player.y) - 20;
 
