@@ -172,7 +172,48 @@ export default class GameScene extends Phaser.Scene {
     // Game state
     this.gameOver = false;
     this.gameWon = false;
+    this.gamePaused = false;
+    this.frozen = false; // true when game over/won — permanent freeze
     this.endText = null;
+    this.pauseOverlay = null;
+    this.pauseText = null;
+
+    // ESC key for pause
+    this.input.keyboard.on('keydown-ESC', () => {
+      if (this.frozen) return; // can't unpause after game over
+      this.togglePause();
+    });
+  }
+
+  togglePause() {
+    this.gamePaused = !this.gamePaused;
+
+    if (this.gamePaused) {
+      // Show pause overlay
+      this.pauseOverlay = this.add.graphics();
+      this.pauseOverlay.fillStyle(0x000000, 0.5);
+      this.pauseOverlay.fillRect(0, 0, CANVAS_WIDTH, ARENA_HEIGHT);
+      this.pauseOverlay.setDepth(990);
+
+      this.pauseText = this.add.text(CANVAS_WIDTH / 2, ARENA_HEIGHT / 2, 'PAUSED', {
+        fontSize: '48px',
+        color: '#ffffff',
+        fontFamily: 'monospace',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 4
+      }).setOrigin(0.5).setDepth(991);
+    } else {
+      // Remove pause overlay
+      if (this.pauseOverlay) { this.pauseOverlay.destroy(); this.pauseOverlay = null; }
+      if (this.pauseText) { this.pauseText.destroy(); this.pauseText = null; }
+    }
+  }
+
+  freezeGame() {
+    this.frozen = true;
+    this.gamePaused = false; // clear pause state
+    this.attackSystem.clearAll();
   }
 
   onEnemyDefeated(enemy) {
@@ -201,6 +242,7 @@ export default class GameScene extends Phaser.Scene {
     for (const reinf of this.reinforcements) {
       if (reinf.trigger === 'enemy_defeated' && reinf.targetEnemyId === enemy.id) {
         this.time.delayedCall(reinf.spawnAfterMs || 2000, () => {
+          if (this.frozen) return;
           this.spawnReinforcements(reinf);
         });
       }
@@ -208,6 +250,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   spawnReinforcements(reinf) {
+    if (this.frozen) return;
     const count = Math.min(reinf.spawnCount, reinf.positions.length);
     for (let i = 0; i < count; i++) {
       const enemyData = this.cache.json.get(reinf.spawnEnemyId);
@@ -232,7 +275,11 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update(time, delta) {
-    if (this.gameOver || this.gameWon) return;
+    // Frozen = game over/won — nothing updates
+    if (this.frozen) return;
+
+    // Paused = ESC pause — nothing updates
+    if (this.gamePaused) return;
 
     // Update platform
     this.platform.update(delta);
@@ -296,14 +343,14 @@ export default class GameScene extends Phaser.Scene {
     const allDead = this.enemies.every(e => !e.alive);
     if (allDead) {
       this.gameWon = true;
-      this.attackSystem.clearAll();
+      this.freezeGame();
       this.showEndText('YOU WIN!', 0x00ff00);
     }
 
     // Lose condition
     if (!this.player.alive) {
       this.gameOver = true;
-      this.attackSystem.clearAll();
+      this.freezeGame();
       this.showEndText('GAME OVER', 0xff0000);
     }
   }
@@ -317,13 +364,13 @@ export default class GameScene extends Phaser.Scene {
       fontStyle: 'bold',
       stroke: '#000000',
       strokeThickness: 4
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setDepth(995);
 
     this.add.text(CANVAS_WIDTH / 2, ARENA_HEIGHT / 2 + 60, 'Press R to restart', {
       fontSize: '18px',
       color: '#ffffff',
       fontFamily: 'monospace'
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setDepth(995);
 
     this.input.keyboard.once('keydown-R', () => {
       this.scene.stop('UIScene');
