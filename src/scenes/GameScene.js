@@ -203,6 +203,8 @@ export default class GameScene extends Phaser.Scene {
     this.endText = null;
     this.pauseOverlay = null;
     this.pauseText = null;
+    this.pauseQuitText = null;
+    this.pauseHintText = null;
 
     // ESC key for pause
     this.input.keyboard.on('keydown-ESC', () => {
@@ -266,8 +268,12 @@ export default class GameScene extends Phaser.Scene {
     // 12. Kill all remaining tweens
     this.tweens.killAll();
 
-    // 13. Remove all event listeners
-    this.events.removeAllListeners();
+    // 13. Remove custom event listeners (NOT removeAllListeners — that strips Phaser internals)
+    this.events.off('chargeHitWall');
+    this.events.off('tweenCycleComplete');
+    this.events.off('enemyDamaged');
+    this.events.off('phaseTransition');
+    this.input.keyboard.removeAllListeners();
   }
 
   togglePause() {
@@ -283,7 +289,7 @@ export default class GameScene extends Phaser.Scene {
       this.pauseOverlay.fillRect(0, 0, CANVAS_WIDTH, ARENA_HEIGHT);
       this.pauseOverlay.setDepth(990);
 
-      this.pauseText = this.add.text(CANVAS_WIDTH / 2, ARENA_HEIGHT / 2, 'PAUSED', {
+      this.pauseText = this.add.text(CANVAS_WIDTH / 2, ARENA_HEIGHT / 2 - 20, 'PAUSED', {
         fontSize: '48px',
         color: '#222233',
         fontFamily: 'monospace',
@@ -291,12 +297,40 @@ export default class GameScene extends Phaser.Scene {
         stroke: '#f5f0e8',
         strokeThickness: 3
       }).setOrigin(0.5).setDepth(991);
+
+      this.pauseHintText = this.add.text(CANVAS_WIDTH / 2, ARENA_HEIGHT / 2 + 30, 'Press ESC to resume', {
+        fontSize: '14px',
+        color: '#555566',
+        fontFamily: 'monospace'
+      }).setOrigin(0.5).setDepth(991);
+
+      this.pauseQuitText = this.add.text(CANVAS_WIDTH / 2, ARENA_HEIGHT / 2 + 60, '[ QUIT ]', {
+        fontSize: '18px',
+        color: '#cc3333',
+        fontFamily: 'monospace',
+        fontStyle: 'bold',
+        stroke: '#f5f0e8',
+        strokeThickness: 2
+      }).setOrigin(0.5).setDepth(991).setInteractive({ useHandCursor: true });
+
+      this.pauseQuitText.on('pointerover', () => {
+        this.pauseQuitText.setColor('#ff4444');
+      });
+      this.pauseQuitText.on('pointerout', () => {
+        this.pauseQuitText.setColor('#cc3333');
+      });
+      this.pauseQuitText.on('pointerdown', () => {
+        this.scene.stop('UIScene');
+        this.scene.start('MapSelectScene');
+      });
     } else {
       // Resume scene timers
       this.time.paused = false;
 
       if (this.pauseOverlay) { this.pauseOverlay.destroy(); this.pauseOverlay = null; }
       if (this.pauseText) { this.pauseText.destroy(); this.pauseText = null; }
+      if (this.pauseQuitText) { this.pauseQuitText.destroy(); this.pauseQuitText = null; }
+      if (this.pauseHintText) { this.pauseHintText.destroy(); this.pauseHintText = null; }
     }
   }
 
@@ -514,7 +548,7 @@ export default class GameScene extends Phaser.Scene {
     });
     this.input.keyboard.once('keydown-M', () => {
       this.scene.stop('UIScene');
-      this.scene.start('TitleScene');
+      this.scene.start('MapSelectScene');
     });
   }
 }
