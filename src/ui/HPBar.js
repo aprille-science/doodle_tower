@@ -6,9 +6,9 @@ export default class HPBar {
     this.width = width;
     this.height = height;
     this.color = color;
-    this.bgColor = opts.bgColor || 0x333333;
-    this.borderColor = opts.borderColor || 0x666666;
-    this.labelColor = opts.labelColor || '#ffffff';
+    this.bgColor = opts.bgColor || 0xddd8cc;
+    this.borderColor = opts.borderColor || 0x222233;
+    this.labelColor = opts.labelColor || '#222233';
 
     this.bgGraphics = scene.add.graphics();
     this.fgGraphics = scene.add.graphics();
@@ -38,7 +38,7 @@ export default class HPBar {
     this.fgGraphics.fillStyle(this.color, 1);
     this.fgGraphics.fillRect(this.x, this.y, this.width * ratio, this.height);
 
-    this.bgGraphics.lineStyle(1, this.borderColor, 1);
+    this.bgGraphics.lineStyle(1.5, this.borderColor, 0.4);
     this.bgGraphics.strokeRect(this.x, this.y, this.width, this.height);
   }
 

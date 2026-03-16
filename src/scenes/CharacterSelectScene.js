@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../constants.js';
 
-const ACCENT = 0x6633aa;
-const ACCENT_LIGHT = 0x9966cc;
-const BG_DARK = 0x0d0d1a;
-const BG_CARD = 0x16162a;
+const PAPER_BG = 0xf5f0e8;
+const GRID_LINE = 0xb8cfe0;
+const INK_DARK = 0x222233;
+const INK_BLUE = 0x2244aa;
+const CARD_BG = 0xeae4d8;
 
 const CHARACTERS = [
   {
@@ -43,15 +44,23 @@ export default class CharacterSelectScene extends Phaser.Scene {
   }
 
   create() {
-    this.cameras.main.setBackgroundColor(BG_DARK);
+    this.cameras.main.setBackgroundColor(PAPER_BG);
+
+    // Graph paper grid
+    const grid = this.add.graphics().setDepth(0);
+    grid.lineStyle(0.5, GRID_LINE, 0.35);
+    for (let x = 0; x <= CANVAS_WIDTH; x += 50) grid.lineBetween(x, 0, x, CANVAS_HEIGHT);
+    for (let y = 0; y <= CANVAS_HEIGHT; y += 50) grid.lineBetween(0, y, CANVAS_WIDTH, y);
+    grid.lineStyle(1.5, 0xd48b8b, 0.35);
+    grid.lineBetween(50, 0, 50, CANVAS_HEIGHT);
 
     // Header
     this.add.text(CANVAS_WIDTH / 2, 36, 'CHARACTER SELECT', {
-      fontSize: '32px', color: '#ffffff', fontFamily: 'monospace', fontStyle: 'bold'
+      fontSize: '32px', color: '#222233', fontFamily: 'monospace', fontStyle: 'bold'
     }).setOrigin(0.5);
 
     const lineGfx = this.add.graphics();
-    lineGfx.lineStyle(1, ACCENT, 0.4);
+    lineGfx.lineStyle(1.5, INK_DARK, 0.25);
     lineGfx.lineBetween(100, 66, CANVAS_WIDTH - 100, 66);
 
     // Character cards
@@ -82,25 +91,33 @@ export default class CharacterSelectScene extends Phaser.Scene {
 
     const container = this.add.container(0, 0);
 
-    // Card background
+    // Card background — notebook card
     const bg = this.add.graphics();
-    bg.fillStyle(BG_CARD, 0.8);
-    bg.fillRoundedRect(x, y, w, h, 8);
-    const borderColor = selected ? char.color : 0x2a2a44;
-    bg.lineStyle(selected ? 2.5 : 1, borderColor, selected ? 1 : 0.5);
-    bg.strokeRoundedRect(x, y, w, h, 8);
+    bg.fillStyle(CARD_BG, selected ? 0.85 : 0.5);
+    bg.fillRoundedRect(x, y, w, h, 4);
+    const borderColor = selected ? char.color : 0x999988;
+    bg.lineStyle(selected ? 2.5 : 1, borderColor, selected ? 0.8 : 0.35);
+    bg.strokeRoundedRect(x, y, w, h, 4);
     container.add(bg);
 
     // Character avatar
     const avatarY = y + 20;
     const avatarSize = 80;
     const avatarGfx = this.add.graphics();
-    avatarGfx.fillStyle(0x111122, 1);
-    avatarGfx.fillRoundedRect(cx - avatarSize / 2, avatarY, avatarSize, avatarSize, 6);
+    avatarGfx.fillStyle(0xf5f0e8, 1);
+    avatarGfx.fillRoundedRect(cx - avatarSize / 2, avatarY, avatarSize, avatarSize, 4);
+    avatarGfx.lineStyle(1, INK_DARK, 0.3);
+    avatarGfx.strokeRoundedRect(cx - avatarSize / 2, avatarY, avatarSize, avatarSize, 4);
 
-    // Player circle
-    avatarGfx.fillStyle(0xffffff, 1);
+    // Player circle — doodle style
+    avatarGfx.fillStyle(0xf5f0e8, 1);
     avatarGfx.fillCircle(cx, avatarY + avatarSize / 2, 12);
+    avatarGfx.lineStyle(1.5, INK_DARK, 0.8);
+    avatarGfx.strokeCircle(cx, avatarY + avatarSize / 2, 12);
+    // Eyes
+    avatarGfx.fillStyle(INK_DARK, 0.9);
+    avatarGfx.fillCircle(cx - 4, avatarY + avatarSize / 2 - 2, 1.5);
+    avatarGfx.fillCircle(cx + 4, avatarY + avatarSize / 2 - 2, 1.5);
 
     // Character-specific icon elements
     if (index === 0) {
@@ -122,15 +139,15 @@ export default class CharacterSelectScene extends Phaser.Scene {
     }
     container.add(avatarGfx);
 
-    // Name
-    const nameColor = selected ? '#ffffff' : '#aaaacc';
+    // Name — pen ink
+    const nameColor = selected ? '#222233' : '#888888';
     container.add(this.add.text(cx, y + 118, char.name, {
       fontSize: '15px', color: nameColor, fontFamily: 'monospace', fontStyle: 'bold'
     }).setOrigin(0.5));
 
-    // Description
+    // Description — pencil gray
     container.add(this.add.text(cx, y + 145, char.description, {
-      fontSize: '10px', color: '#777799', fontFamily: 'monospace',
+      fontSize: '10px', color: '#777788', fontFamily: 'monospace',
       wordWrap: { width: w - 24 }, align: 'center', lineSpacing: 4
     }).setOrigin(0.5, 0));
 
@@ -149,8 +166,8 @@ export default class CharacterSelectScene extends Phaser.Scene {
       { label: 'PASSIVE', value: char.stats.passive },
       { label: 'ACTIVE', value: char.stats.active }
     ];
-    const statsColor = selected ? '#888899' : '#555566';
-    const valColor = selected ? '#ccccdd' : '#777788';
+    const statsColor = selected ? '#666677' : '#999999';
+    const valColor = selected ? '#333344' : '#888888';
     statLines.forEach((stat, si) => {
       const sy = statsY + si * 22;
       container.add(this.add.text(x + 16, sy, stat.label, {
@@ -183,10 +200,10 @@ export default class CharacterSelectScene extends Phaser.Scene {
 
     // Hover overlay
     const hoverGfx = this.add.graphics().setVisible(false);
-    hoverGfx.fillStyle(char.color, 0.08);
-    hoverGfx.fillRoundedRect(x, y, w, h, 8);
-    hoverGfx.lineStyle(2, char.color, 0.6);
-    hoverGfx.strokeRoundedRect(x, y, w, h, 8);
+    hoverGfx.fillStyle(char.color, 0.06);
+    hoverGfx.fillRoundedRect(x, y, w, h, 4);
+    hoverGfx.lineStyle(2, char.color, 0.5);
+    hoverGfx.strokeRoundedRect(x, y, w, h, 4);
     container.add(hoverGfx);
 
     zone.on('pointerover', () => { if (index !== this.selectedIndex) hoverGfx.setVisible(true); });
@@ -236,18 +253,18 @@ export default class CharacterSelectScene extends Phaser.Scene {
     const bh = 36;
 
     const bg = this.add.graphics();
-    bg.fillStyle(BG_CARD, 0.7);
-    bg.fillRoundedRect(bx - bw / 2, by - bh / 2, bw, bh, 6);
-    bg.lineStyle(1, ACCENT, 0.5);
-    bg.strokeRoundedRect(bx - bw / 2, by - bh / 2, bw, bh, 6);
+    bg.fillStyle(CARD_BG, 0.7);
+    bg.fillRoundedRect(bx - bw / 2, by - bh / 2, bw, bh, 4);
+    bg.lineStyle(1.5, INK_DARK, 0.35);
+    bg.strokeRoundedRect(bx - bw / 2, by - bh / 2, bw, bh, 4);
 
     const label = this.add.text(bx, by, 'BACK', {
-      fontSize: '14px', color: '#aaaacc', fontFamily: 'monospace', fontStyle: 'bold'
+      fontSize: '14px', color: '#555555', fontFamily: 'monospace', fontStyle: 'bold'
     }).setOrigin(0.5);
 
     const zone = this.add.zone(bx, by, bw, bh).setInteractive({ useHandCursor: true });
-    zone.on('pointerover', () => label.setColor('#ffffff'));
-    zone.on('pointerout', () => label.setColor('#aaaacc'));
+    zone.on('pointerover', () => label.setColor('#2244aa'));
+    zone.on('pointerout', () => label.setColor('#555555'));
     zone.on('pointerup', () => this.scene.start('TitleScene'));
   }
 }

@@ -34,17 +34,17 @@ export class SpriteHPBar {
 
     this.graphics.clear();
 
-    // Background
-    this.graphics.fillStyle(0x333333, 1);
+    // Background — paper
+    this.graphics.fillStyle(0xddd8cc, 0.8);
     this.graphics.fillRect(barX, barY, this.barWidth, this.barHeight);
 
     // Fill
     const fillWidth = Math.max(0, this.displayFill * this.barWidth);
-    this.graphics.fillStyle(this.barColor, 1);
+    this.graphics.fillStyle(this.barColor, 0.7);
     this.graphics.fillRect(barX, barY, fillWidth, this.barHeight);
 
-    // Border
-    this.graphics.lineStyle(1, 0x555555, 0.6);
+    // Border — pen outline
+    this.graphics.lineStyle(1, 0x222233, 0.4);
     this.graphics.strokeRect(barX, barY, this.barWidth, this.barHeight);
 
     // Status effect indicators above HP bar

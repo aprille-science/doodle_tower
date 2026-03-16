@@ -95,5 +95,6 @@ export class OrbitingFireballsPassive extends BasePassiveSkill {
       fb.glowGfx.destroy();
     }
     this.fireballs = [];
+    this.damageHitMap.clear();
   }
 }

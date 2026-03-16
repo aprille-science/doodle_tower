@@ -48,8 +48,17 @@ export default class Platform {
 
   draw() {
     this.graphics.clear();
-    this.graphics.fillStyle(0xaaaaaa, 1);
-    this.graphics.fillRoundedRect(this.x, this.y, this.width, this.height, 4);
+    // Doodle-style platform: thick pen-drawn bar
+    this.graphics.fillStyle(0xd0c8b8, 0.8);
+    this.graphics.fillRoundedRect(this.x, this.y, this.width, this.height, 3);
+    // Pen outline
+    this.graphics.lineStyle(2, 0x333333, 0.8);
+    this.graphics.strokeRoundedRect(this.x + 0.5, this.y + 0.5, this.width - 1, this.height - 1, 3);
+    // Hatching lines for texture
+    this.graphics.lineStyle(0.5, 0x666666, 0.25);
+    for (let hx = this.x + 6; hx < this.x + this.width - 3; hx += 8) {
+      this.graphics.lineBetween(hx, this.y + 2, hx + 4, this.y + this.height - 2);
+    }
   }
 
   getCenterX() {

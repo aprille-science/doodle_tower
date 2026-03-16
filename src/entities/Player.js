@@ -157,20 +157,33 @@ export default class Player {
 
     if (!this.alive) return;
 
-    // Damage flash (white bright)
+    // Doodle-style player: pencil-drawn circle with fill
     if (this._damageFlash) {
-      this.graphics.fillStyle(0xff4444, 1);
+      this.graphics.fillStyle(0xcc3333, 0.9);
     } else if (this.invulnTimer > 0 && Math.floor(this.invulnTimer / 80) % 2 === 0) {
-      this.graphics.fillStyle(0xffffff, 0.3);
+      this.graphics.fillStyle(0x666666, 0.3);
     } else {
-      this.graphics.fillStyle(0xffffff, 1);
+      this.graphics.fillStyle(0xf5f0e8, 1); // Paper-colored fill
     }
     this.graphics.fillCircle(this.x, this.y, this.radius);
 
-    // Shield visual
+    // Sketchy ink outline — draw multiple slightly offset circles
+    this.graphics.lineStyle(1.5, 0x222222, 0.9);
+    this.graphics.strokeCircle(this.x + 0.3, this.y + 0.3, this.radius);
+    this.graphics.lineStyle(1, 0x333333, 0.5);
+    this.graphics.strokeCircle(this.x - 0.3, this.y - 0.3, this.radius + 0.5);
+
+    // Eyes (two small dots)
+    this.graphics.fillStyle(0x222222, 1);
+    this.graphics.fillCircle(this.x - 3, this.y - 2, 1.5);
+    this.graphics.fillCircle(this.x + 3, this.y - 2, 1.5);
+
+    // Shield visual — dashed-looking ring
     if (this.shieldActive) {
-      this.shieldGraphics.lineStyle(3, 0x4488ff, 0.7);
+      this.shieldGraphics.lineStyle(2, 0x3366aa, 0.7);
       this.shieldGraphics.strokeCircle(this.x, this.y, this.radius + 8);
+      this.shieldGraphics.lineStyle(1, 0x3366aa, 0.3);
+      this.shieldGraphics.strokeCircle(this.x, this.y, this.radius + 10);
     }
   }
 

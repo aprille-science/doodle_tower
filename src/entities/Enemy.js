@@ -104,21 +104,50 @@ export default class Enemy {
     const drawX = this.x - this.width / 2;
     const drawY = this.y - this.height / 2;
 
-    // Flash during phase transition or damage
+    // Doodle-style enemy: sketched rectangle with pen ink
     if (this._damageFlash) {
-      this.graphics.fillStyle(0xffffff, 1);
+      this.graphics.fillStyle(0xee6644, 0.6);
     } else if (this.phaseTransitioning && Math.floor(this.flashTimer / 100) % 2 === 0) {
-      this.graphics.fillStyle(0xffffff, 0.9);
+      this.graphics.fillStyle(0xdddddd, 0.7);
     } else if (this._chargeTint) {
-      this.graphics.fillStyle(0xff2222, 1);
+      this.graphics.fillStyle(0xcc3333, 0.4); // Red marker fill when charging
     } else {
-      this.graphics.fillStyle(0x6633aa, 1);
+      this.graphics.fillStyle(0xe8ddf5, 0.5); // Light purple pencil shading
     }
     this.graphics.fillRect(drawX, drawY, this.width, this.height);
 
-    // Outline
-    this.graphics.lineStyle(2, 0x9966cc, 1);
-    this.graphics.strokeRect(drawX, drawY, this.width, this.height);
+    // Sketchy ink outline — thick pen stroke with slight offsets
+    const pen = this._chargeTint ? 0xaa2222 : 0x333355;
+    this.graphics.lineStyle(2, pen, 0.85);
+    this.graphics.strokeRect(drawX + 0.5, drawY + 0.5, this.width - 1, this.height - 1);
+    // Second pass for hand-drawn feel
+    this.graphics.lineStyle(0.8, pen, 0.4);
+    this.graphics.strokeRect(drawX - 0.3, drawY - 0.3, this.width + 0.6, this.height + 0.6);
+
+    // Doodle face: angry eyes + mouth
+    const cx = this.x;
+    const cy = this.y;
+    const faceScale = Math.min(this.width, this.height) / 50;
+    this.graphics.fillStyle(0x222222, 0.9);
+    // Eyes
+    this.graphics.fillRect(cx - 8 * faceScale, cy - 4 * faceScale, 4 * faceScale, 4 * faceScale);
+    this.graphics.fillRect(cx + 4 * faceScale, cy - 4 * faceScale, 4 * faceScale, 4 * faceScale);
+    // Angry brows
+    this.graphics.lineStyle(1.5 * faceScale, 0x222222, 0.8);
+    this.graphics.lineBetween(
+      cx - 10 * faceScale, cy - 8 * faceScale,
+      cx - 4 * faceScale, cy - 6 * faceScale
+    );
+    this.graphics.lineBetween(
+      cx + 10 * faceScale, cy - 8 * faceScale,
+      cx + 4 * faceScale, cy - 6 * faceScale
+    );
+    // Mouth
+    this.graphics.lineStyle(1 * faceScale, 0x222222, 0.7);
+    this.graphics.lineBetween(
+      cx - 5 * faceScale, cy + 6 * faceScale,
+      cx + 5 * faceScale, cy + 6 * faceScale
+    );
   }
 
   destroy() {
