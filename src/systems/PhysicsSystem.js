@@ -17,6 +17,20 @@ export default class PhysicsSystem {
 
     for (const tile of terrainTiles) {
       if (!tile.active) continue;
+
+      // Shield tiles use bounds-based collision (they move smoothly)
+      if (tile._shieldOwner) {
+        if (this.circleRectOverlap(
+          player.x, player.y, player.radius,
+          tile.x, tile.y, CELL_WIDTH, CELL_HEIGHT
+        )) {
+          if (tile.bouncePlayer) {
+            this.bouncePlayerFromTileWorld(player, tile.x, tile.y);
+          }
+        }
+        continue;
+      }
+
       if (tile.col === playerCol && tile.row === playerRow) {
         if (tile.bouncePlayer) {
           this.bouncePlayerFromTile(player, tile);
@@ -28,6 +42,12 @@ export default class PhysicsSystem {
   bouncePlayerFromTile(player, tile) {
     const tileCenterX = tile.col * CELL_WIDTH + CELL_WIDTH / 2;
     const tileCenterY = tile.row * CELL_HEIGHT + CELL_HEIGHT / 2;
+    this.bouncePlayerFromTileWorld(player, tile.col * CELL_WIDTH, tile.row * CELL_HEIGHT);
+  }
+
+  bouncePlayerFromTileWorld(player, tileX, tileY) {
+    const tileCenterX = tileX + CELL_WIDTH / 2;
+    const tileCenterY = tileY + CELL_HEIGHT / 2;
     const dx = player.x - tileCenterX;
     const dy = player.y - tileCenterY;
 

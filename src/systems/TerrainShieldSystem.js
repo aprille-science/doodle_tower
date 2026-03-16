@@ -41,7 +41,8 @@ export class TerrainShieldSystem {
           damage: 0,
           bouncePlayer: true,
           passthrough: false,
-          color: color
+          color: color,
+          alpha: 0.85
         });
         tile._shieldOwner = enemy;
         tile._offsetX = off.dx;

@@ -12,6 +12,7 @@ export default class TerrainTile {
     this.bouncePlayer = cellData.bouncePlayer;
     this.passthrough = cellData.passthrough;
     this.color = parseInt(cellData.color);
+    this.alpha = cellData.alpha !== undefined ? cellData.alpha : CELL_HIGHLIGHT_ALPHA;
     this.active = true;
 
     this.x = this.col * CELL_WIDTH;
@@ -24,8 +25,13 @@ export default class TerrainTile {
   draw() {
     this.graphics.clear();
     if (!this.active) return;
-    this.graphics.fillStyle(this.color, CELL_HIGHLIGHT_ALPHA);
+    this.graphics.fillStyle(this.color, this.alpha);
     this.graphics.fillRect(this.x, this.y, CELL_WIDTH, CELL_HEIGHT);
+    // Outline for solid tiles
+    if (this.alpha > CELL_HIGHLIGHT_ALPHA) {
+      this.graphics.lineStyle(1, 0xffffff, 0.3);
+      this.graphics.strokeRect(this.x, this.y, CELL_WIDTH, CELL_HEIGHT);
+    }
   }
 
   takeDamage(amount) {

@@ -44,6 +44,7 @@ export class StormBoltPassive extends BasePassiveSkill {
     const dy = closest.y - this.player.y;
     const angle = Phaser.Math.RadToDeg(Math.atan2(dy, dx));
 
+    const pierce = this.config.pierceMode || 'none';
     const proj = new Projectile(this.scene, {
       worldX: this.player.x,
       worldY: this.player.y,
@@ -51,9 +52,9 @@ export class StormBoltPassive extends BasePassiveSkill {
       speed: (this.config.speed || 600) / GAME_SPEED_SCALE, // compensate since Projectile applies scale
       damage: this.config.damage || 15,
       enemyDamage: this.config.damage || 15,
-      pierceMode: 'none',
+      pierceMode: pierce,
       radius: this.config.radius || 5,
-      maxHits: 1,
+      maxHits: pierce === 'pierce_enemies' ? -1 : 1,
       lifetime: 3000,
       onDestroyEffect: 'fizzle',
       color: this.config.color ? parseInt(this.config.color) : 0xffee00,

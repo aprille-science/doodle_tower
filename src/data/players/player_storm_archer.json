@@ -11,11 +11,12 @@
   "radius": 10,
   "passive": {
     "type": "storm_bolt",
-    "intervalMs": 3000,
+    "intervalMs": 2000,
     "damage": 15,
-    "speed": 600,
+    "speed": 900,
     "radius": 5,
     "color": "0xffee00",
+    "pierceMode": "pierce_enemies",
     "paralyzeDurationMs": 1000
   },
   "active": {
@@ -23,9 +24,10 @@
     "cooldownMs": 12000,
     "damage": 100,
     "terrainDamage": 50,
-    "speed": 400,
+    "speed": 500,
     "radius": 36,
     "color": "0xffee00",
-    "paralyzeDurationMs": 5000
+    "paralyzeDurationMs": 5000,
+    "aoeRadiusTiles": 2
   }
 }
