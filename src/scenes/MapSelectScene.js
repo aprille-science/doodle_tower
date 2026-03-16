@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../constants.js';
 
-const ACCENT = 0x6633aa;
-const ACCENT_LIGHT = 0x9966cc;
-const BG_DARK = 0x0d0d1a;
-const BG_CARD = 0x16162a;
-const CARD_BORDER = 0x2a2a44;
+const PAPER_BG = 0xf5f0e8;
+const GRID_LINE = 0xb8cfe0;
+const INK_DARK = 0x222233;
+const INK_BLUE = 0x2244aa;
+const CARD_BG = 0xeae4d8;
+const CARD_BORDER = 0x999988;
 
 const ENEMY_COLORS = {
   wanderer_01: { main: 0x44aa44, accent: '#44aa44', name: 'Wanderer' },
@@ -37,7 +38,15 @@ export default class MapSelectScene extends Phaser.Scene {
   }
 
   create() {
-    this.cameras.main.setBackgroundColor(BG_DARK);
+    this.cameras.main.setBackgroundColor(PAPER_BG);
+
+    // Graph paper grid
+    const grid = this.add.graphics().setDepth(0);
+    grid.lineStyle(0.5, GRID_LINE, 0.35);
+    for (let x = 0; x <= CANVAS_WIDTH; x += 50) grid.lineBetween(x, 0, x, CANVAS_HEIGHT);
+    for (let y = 0; y <= CANVAS_HEIGHT; y += 50) grid.lineBetween(0, y, CANVAS_WIDTH, y);
+    grid.lineStyle(1.5, 0xd48b8b, 0.35);
+    grid.lineBetween(50, 0, 50, CANVAS_HEIGHT);
 
     // Calculate content height for scrolling
     const rowCount = Math.ceil(MAP_IDS.length / CARDS_PER_ROW);
@@ -52,7 +61,7 @@ export default class MapSelectScene extends Phaser.Scene {
     this.scrollContainer.add(
       this.add.text(CANVAS_WIDTH / 2, 36, 'MAP SELECT', {
         fontSize: '32px',
-        color: '#ffffff',
+        color: '#222233',
         fontFamily: 'monospace',
         fontStyle: 'bold'
       }).setOrigin(0.5)
@@ -60,7 +69,7 @@ export default class MapSelectScene extends Phaser.Scene {
 
     // Decorative line under header
     const lineGfx = this.add.graphics();
-    lineGfx.lineStyle(1, ACCENT, 0.4);
+    lineGfx.lineStyle(1.5, INK_DARK, 0.25);
     lineGfx.lineBetween(100, 70, CANVAS_WIDTH - 100, 70);
     this.scrollContainer.add(lineGfx);
 
@@ -113,30 +122,30 @@ export default class MapSelectScene extends Phaser.Scene {
     const y = cy - CARD_H / 2;
     const enemyInfo = ENEMY_COLORS[mapData.enemyPreview] || ENEMY_COLORS.wanderer_01;
 
-    // Card background
+    // Card background — notebook card
     const bg = this.add.graphics();
-    bg.fillStyle(BG_CARD, 0.8);
-    bg.fillRoundedRect(x, y, CARD_W, CARD_H, 6);
-    bg.lineStyle(1, CARD_BORDER, 0.6);
-    bg.strokeRoundedRect(x, y, CARD_W, CARD_H, 6);
+    bg.fillStyle(CARD_BG, 0.7);
+    bg.fillRoundedRect(x, y, CARD_W, CARD_H, 4);
+    bg.lineStyle(1.5, INK_DARK, 0.35);
+    bg.strokeRoundedRect(x, y, CARD_W, CARD_H, 4);
 
     // Colored accent bar on left
     const accentBar = this.add.graphics();
     accentBar.fillStyle(enemyInfo.main, 0.8);
     accentBar.fillRoundedRect(x, y, 5, CARD_H, { tl: 6, bl: 6, tr: 0, br: 0 });
 
-    // Map name
+    // Map name — pen ink
     const nameText = this.add.text(x + 18, y + 14, mapData.name, {
       fontSize: '16px',
-      color: '#eeeeee',
+      color: '#222233',
       fontFamily: 'monospace',
       fontStyle: 'bold'
     });
 
-    // Description
+    // Description — pencil gray
     const descText = this.add.text(x + 18, y + 40, mapData.description, {
       fontSize: '11px',
-      color: '#888899',
+      color: '#666677',
       fontFamily: 'monospace',
       wordWrap: { width: CARD_W - 36 }
     });
@@ -158,7 +167,7 @@ export default class MapSelectScene extends Phaser.Scene {
     const enemyCount = mapData.initialEnemies.length;
     const countText = this.add.text(x + CARD_W - 18, diffY + 2, `${enemyCount} enemies`, {
       fontSize: '10px',
-      color: '#666677',
+      color: '#888888',
       fontFamily: 'monospace'
     }).setOrigin(1, 0);
 
@@ -175,12 +184,12 @@ export default class MapSelectScene extends Phaser.Scene {
       this.scrollContainer.add(el);
     }
 
-    // Hover overlay
+    // Hover overlay — blue ink highlight
     const hoverGfx = this.add.graphics().setVisible(false);
-    hoverGfx.fillStyle(ACCENT, 0.1);
-    hoverGfx.fillRoundedRect(x, y, CARD_W, CARD_H, 6);
-    hoverGfx.lineStyle(2, ACCENT_LIGHT, 0.8);
-    hoverGfx.strokeRoundedRect(x, y, CARD_W, CARD_H, 6);
+    hoverGfx.fillStyle(INK_BLUE, 0.06);
+    hoverGfx.fillRoundedRect(x, y, CARD_W, CARD_H, 4);
+    hoverGfx.lineStyle(2, INK_BLUE, 0.6);
+    hoverGfx.strokeRoundedRect(x, y, CARD_W, CARD_H, 4);
     this.scrollContainer.add(hoverGfx);
 
     // Interactive zone (we'll update its position each frame for scroll)
@@ -214,31 +223,31 @@ export default class MapSelectScene extends Phaser.Scene {
 
     const container = this.add.container(0, 0).setDepth(20);
 
-    // Fixed dark bg behind button area
+    // Fixed paper bg behind button area
     const footerBg = this.add.graphics();
-    footerBg.fillStyle(BG_DARK, 0.95);
+    footerBg.fillStyle(PAPER_BG, 0.95);
     footerBg.fillRect(0, CANVAS_HEIGHT - 60, CANVAS_WIDTH, 60);
-    footerBg.lineStyle(1, 0x222244, 0.5);
+    footerBg.lineStyle(1, INK_DARK, 0.15);
     footerBg.lineBetween(0, CANVAS_HEIGHT - 60, CANVAS_WIDTH, CANVAS_HEIGHT - 60);
     container.add(footerBg);
 
     const bg = this.add.graphics();
-    bg.fillStyle(BG_CARD, 0.7);
-    bg.fillRoundedRect(bx - bw / 2, by - bh / 2, bw, bh, 6);
-    bg.lineStyle(1, ACCENT, 0.5);
-    bg.strokeRoundedRect(bx - bw / 2, by - bh / 2, bw, bh, 6);
+    bg.fillStyle(CARD_BG, 0.7);
+    bg.fillRoundedRect(bx - bw / 2, by - bh / 2, bw, bh, 4);
+    bg.lineStyle(1.5, INK_DARK, 0.35);
+    bg.strokeRoundedRect(bx - bw / 2, by - bh / 2, bw, bh, 4);
     container.add(bg);
 
     const label = this.add.text(bx, by, 'BACK', {
-      fontSize: '14px', color: '#aaaacc', fontFamily: 'monospace', fontStyle: 'bold'
+      fontSize: '14px', color: '#555555', fontFamily: 'monospace', fontStyle: 'bold'
     }).setOrigin(0.5);
     container.add(label);
 
     const zone = this.add.zone(bx, by, bw, bh).setInteractive({ useHandCursor: true });
     container.add(zone);
 
-    zone.on('pointerover', () => label.setColor('#ffffff'));
-    zone.on('pointerout', () => label.setColor('#aaaacc'));
+    zone.on('pointerover', () => label.setColor('#2244aa'));
+    zone.on('pointerout', () => label.setColor('#555555'));
     zone.on('pointerup', () => this.scene.start('TitleScene'));
   }
 
@@ -251,9 +260,9 @@ export default class MapSelectScene extends Phaser.Scene {
     const thumbH = Math.max(30, (CANVAS_HEIGHT / this.contentHeight) * trackH);
     const thumbY = (this.scrollY / this.maxScroll) * (trackH - thumbH);
 
-    this.scrollIndicator.fillStyle(0x333355, 0.5);
+    this.scrollIndicator.fillStyle(0xccccbb, 0.4);
     this.scrollIndicator.fillRoundedRect(trackX, 0, 4, trackH, 2);
-    this.scrollIndicator.fillStyle(ACCENT_LIGHT, 0.6);
+    this.scrollIndicator.fillStyle(INK_DARK, 0.35);
     this.scrollIndicator.fillRoundedRect(trackX, thumbY, 4, thumbH, 2);
   }
 

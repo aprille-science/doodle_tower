@@ -102,7 +102,7 @@ export default class GameScene extends Phaser.Scene {
 
     // Create sprite HP bars
     this.spriteHPBars = [];
-    this.playerHPBar = new SpriteHPBar(this, this.player, 0x33ee66);
+    this.playerHPBar = new SpriteHPBar(this, this.player, 0x338833);
     for (const enemy of this.enemies) {
       if (!enemy.data.isBoss) {
         const bar = new SpriteHPBar(this, enemy, 0xee3333);
@@ -209,6 +209,65 @@ export default class GameScene extends Phaser.Scene {
       if (this.frozen) return;
       this.togglePause();
     });
+
+    // Clean up everything when scene shuts down (restart or transition)
+    this.events.once('shutdown', () => this.cleanup());
+  }
+
+  cleanup() {
+    // 1. Stop all scene timers to prevent callbacks firing on dead scene
+    this.time.removeAllEvents();
+
+    // 2. Destroy movement system (kills all tweens from TweenX/TweenY)
+    if (this.movementSystem) this.movementSystem.destroy();
+
+    // 3. Destroy attack system (kills timers, zones, projectiles)
+    if (this.attackSystem) this.attackSystem.destroy();
+
+    // 4. Destroy status/terrain/shield systems
+    if (this.statusEffectManager) this.statusEffectManager.destroy();
+    if (this.terrainEffectManager) this.terrainEffectManager.destroy();
+    if (this.terrainShieldSystem) this.terrainShieldSystem.destroy();
+
+    // 5. Deactivate skill manager (cleans up orbiting fireball graphics, etc.)
+    if (this.player && this.player.skillManager) {
+      this.player.skillManager.deactivate();
+    }
+
+    // 6. Destroy all terrain tiles
+    for (const tile of this.terrainTiles) {
+      if (tile.graphics) tile.graphics.destroy();
+    }
+    this.terrainTiles = [];
+
+    // 7. Destroy all enemies
+    for (const enemy of this.enemies) {
+      enemy.destroy();
+    }
+    this.enemies = [];
+
+    // 8. Destroy player
+    if (this.player) this.player.destroy();
+
+    // 9. Destroy platform
+    if (this.platform) this.platform.destroy();
+
+    // 10. Destroy HP bars
+    if (this.playerHPBar) this.playerHPBar.destroy();
+    for (const bar of this.spriteHPBars) {
+      bar.destroy();
+    }
+    this.spriteHPBars = [];
+
+    // 11. Destroy grid & UI elements
+    if (this.gridSystem) this.gridSystem.destroy();
+    if (this.parryEffect) this.parryEffect.destroy();
+
+    // 12. Kill all remaining tweens
+    this.tweens.killAll();
+
+    // 13. Remove all event listeners
+    this.events.removeAllListeners();
   }
 
   togglePause() {
@@ -218,19 +277,19 @@ export default class GameScene extends Phaser.Scene {
       // Pause all scene timers (attack timers, delayed calls)
       this.time.paused = true;
 
-      // Show pause overlay
+      // Show pause overlay — paper overlay
       this.pauseOverlay = this.add.graphics();
-      this.pauseOverlay.fillStyle(0x000000, 0.5);
+      this.pauseOverlay.fillStyle(0xf5f0e8, 0.7);
       this.pauseOverlay.fillRect(0, 0, CANVAS_WIDTH, ARENA_HEIGHT);
       this.pauseOverlay.setDepth(990);
 
       this.pauseText = this.add.text(CANVAS_WIDTH / 2, ARENA_HEIGHT / 2, 'PAUSED', {
         fontSize: '48px',
-        color: '#ffffff',
+        color: '#222233',
         fontFamily: 'monospace',
         fontStyle: 'bold',
-        stroke: '#000000',
-        strokeThickness: 4
+        stroke: '#f5f0e8',
+        strokeThickness: 3
       }).setOrigin(0.5).setDepth(991);
     } else {
       // Resume scene timers
@@ -428,19 +487,24 @@ export default class GameScene extends Phaser.Scene {
   }
 
   showEndText(message, color) {
+    // Semi-transparent paper overlay
+    const overlay = this.add.graphics().setDepth(994);
+    overlay.fillStyle(0xf5f0e8, 0.75);
+    overlay.fillRect(0, 0, CANVAS_WIDTH, ARENA_HEIGHT);
+
     const hex = '#' + color.toString(16).padStart(6, '0');
     this.endText = this.add.text(CANVAS_WIDTH / 2, ARENA_HEIGHT / 2, message, {
       fontSize: '48px',
       color: hex,
       fontFamily: 'monospace',
       fontStyle: 'bold',
-      stroke: '#000000',
-      strokeThickness: 4
+      stroke: '#f5f0e8',
+      strokeThickness: 3
     }).setOrigin(0.5).setDepth(995);
 
     this.add.text(CANVAS_WIDTH / 2, ARENA_HEIGHT / 2 + 50, 'Press R to retry  |  Press M for menu', {
       fontSize: '15px',
-      color: '#ffffff',
+      color: '#333344',
       fontFamily: 'monospace'
     }).setOrigin(0.5).setDepth(995);
 

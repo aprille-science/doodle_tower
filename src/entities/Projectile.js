@@ -260,16 +260,22 @@ export default class Projectile {
   draw() {
     this.graphics.clear();
     if (!this.active) return;
-    this.graphics.fillStyle(this.color, 1);
+
+    // Doodle-style projectile: ink blob with sketchy outline
+    this.graphics.fillStyle(this.color, 0.7);
     this.graphics.fillCircle(this.x, this.y, this.radius);
+    // Pen outline
+    this.graphics.lineStyle(1.2, 0x222222, 0.6);
+    this.graphics.strokeCircle(this.x + 0.3, this.y + 0.3, this.radius);
 
     if (this.glowGraphics) {
       this.glowGraphics.clear();
       const pulse = 0.8 + Math.sin(this.pulseTimer * 0.005) * 0.2;
-      this.glowGraphics.fillStyle(this.color, 0.25);
-      this.glowGraphics.fillCircle(this.x, this.y, this.radius * 1.6 * pulse);
-      this.glowGraphics.lineStyle(2, this.color, 0.6);
-      this.glowGraphics.strokeCircle(this.x, this.y, this.radius * 1.3 * pulse);
+      // Sketchy glow ring
+      this.glowGraphics.lineStyle(1.5, this.color, 0.35);
+      this.glowGraphics.strokeCircle(this.x, this.y, this.radius * 1.5 * pulse);
+      this.glowGraphics.lineStyle(0.8, this.color, 0.2);
+      this.glowGraphics.strokeCircle(this.x, this.y, this.radius * 1.8 * pulse);
     }
   }
 

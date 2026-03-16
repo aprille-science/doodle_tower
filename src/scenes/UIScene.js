@@ -21,15 +21,17 @@ export default class UIScene extends Phaser.Scene {
     this.bossGroup.setVisible(false);
     this.bossGroup.setDepth(950);
 
-    // Semi-transparent backdrop for readability
+    // Semi-transparent paper backdrop for readability
     this.bossBackdrop = this.add.graphics();
-    this.bossBackdrop.fillStyle(0x000000, 0.55);
+    this.bossBackdrop.fillStyle(0xf5f0e8, 0.85);
     this.bossBackdrop.fillRect(0, 0, CANVAS_WIDTH, 42);
+    this.bossBackdrop.lineStyle(1, 0x222233, 0.2);
+    this.bossBackdrop.lineBetween(0, 42, CANVAS_WIDTH, 42);
     this.bossGroup.add(this.bossBackdrop);
 
-    // Boss name
+    // Boss name — pen ink
     this.bossNameText = this.add.text(CANVAS_WIDTH / 2, 6, '', {
-      fontSize: '12px', color: '#ffffff',
+      fontSize: '12px', color: '#222233',
       fontFamily: 'monospace', fontStyle: 'bold'
     }).setOrigin(0.5, 0);
     this.bossGroup.add(this.bossNameText);
@@ -42,9 +44,9 @@ export default class UIScene extends Phaser.Scene {
     this.bossDmgGraphics = this.add.graphics();
     this.bossGroup.add(this.bossDmgGraphics);
 
-    // Phase text (right side of boss bar)
+    // Phase text (right side of boss bar) — pencil
     this.phaseText = this.add.text(CANVAS_WIDTH - 10, 6, '', {
-      fontSize: '11px', color: '#ccccff', fontFamily: 'monospace'
+      fontSize: '11px', color: '#555566', fontFamily: 'monospace'
     }).setOrigin(1, 0);
     this.bossGroup.add(this.phaseText);
 
@@ -63,23 +65,23 @@ export default class UIScene extends Phaser.Scene {
     const leftMargin = 16;
     const barWidth = 300;
 
-    // Background
+    // Background — paper UI panel
     this.panelBg = this.add.graphics();
-    this.panelBg.fillStyle(0x0a0a1a, 1);
+    this.panelBg.fillStyle(0xeae4d8, 1);
     this.panelBg.fillRect(0, panelY, CANVAS_WIDTH, UI_HEIGHT);
-    this.panelBg.lineStyle(2, 0x333366, 1);
+    this.panelBg.lineStyle(2, 0x222233, 0.4);
     this.panelBg.lineBetween(0, panelY, CANVAS_WIDTH, panelY);
 
     // Row 1: Player HP + Shield (y = panelY + 12)
     this.playerHPBar = new HPBar(
-      this, leftMargin, panelY + 22, barWidth, barHeight, 0xff3333, 'HP'
+      this, leftMargin, panelY + 22, barWidth, barHeight, 0xcc3333, 'HP'
     );
     this.shieldBar = new ShieldBar(
       this, leftMargin + barWidth + 30, panelY + 22, barWidth, barHeight
     );
     this.lockoutText = this.add.text(
       leftMargin + barWidth * 2 + 70, panelY + 24, '',
-      { fontSize: '10px', color: '#ff4444', fontFamily: 'monospace' }
+      { fontSize: '10px', color: '#cc3333', fontFamily: 'monospace' }
     );
 
     // Row 2: Skill cooldown (y = panelY + 60)
@@ -94,16 +96,30 @@ export default class UIScene extends Phaser.Scene {
       : 'SKILL';
     this.skillLabel = this.add.text(
       this.cooldownCenterX + 28, panelY + 66, skillName,
-      { fontSize: '11px', color: '#ff6644', fontFamily: 'monospace' }
+      { fontSize: '11px', color: '#cc5533', fontFamily: 'monospace' }
     );
     this.skillStatusText = this.add.text(
       this.cooldownCenterX + 28, panelY + 80, 'READY',
-      { fontSize: '13px', color: '#44ff44', fontFamily: 'monospace', fontStyle: 'bold' }
+      { fontSize: '13px', color: '#338833', fontFamily: 'monospace', fontStyle: 'bold' }
     );
     this.fKeyHint = this.add.text(
       this.cooldownCenterX + 28, panelY + 96, '[F]',
-      { fontSize: '11px', color: '#888888', fontFamily: 'monospace' }
+      { fontSize: '11px', color: '#999988', fontFamily: 'monospace' }
     );
+
+    // Clean up on shutdown
+    this.events.once('shutdown', () => this.cleanup());
+  }
+
+  cleanup() {
+    if (this.bossDmgTween) {
+      this.bossDmgTween.stop();
+      this.bossDmgTween = null;
+    }
+    this.tweens.killAll();
+    this.events.removeAllListeners();
+    this.player = null;
+    this.enemies = null;
   }
 
   // ----------------------------------------------------------------
@@ -130,17 +146,14 @@ export default class UIScene extends Phaser.Scene {
     const barH = 14;
 
     this.bossBarGraphics.clear();
-    // Background
-    this.bossBarGraphics.fillStyle(0x222222, 1);
+    // Background — paper
+    this.bossBarGraphics.fillStyle(0xddd8cc, 1);
     this.bossBarGraphics.fillRect(barX, barY, barW, barH);
-    // Dark red layer (gives gradient impression when HP shrinks)
-    this.bossBarGraphics.fillStyle(0x8b0000, 1);
+    // HP fill — red ink
+    this.bossBarGraphics.fillStyle(0xcc3333, 0.7);
     this.bossBarGraphics.fillRect(barX, barY, barW * this.bossHPFraction, barH);
-    // Bright red actual HP
-    this.bossBarGraphics.fillStyle(0xdd0000, 1);
-    this.bossBarGraphics.fillRect(barX, barY, barW * this.bossHPFraction, barH);
-    // Border
-    this.bossBarGraphics.lineStyle(2, 0x666666, 1);
+    // Border — pen outline
+    this.bossBarGraphics.lineStyle(1.5, 0x222233, 0.5);
     this.bossBarGraphics.strokeRect(barX, barY, barW, barH);
   }
 
@@ -229,33 +242,35 @@ export default class UIScene extends Phaser.Scene {
     const cy = this.cooldownCenterY;
     const r = this.cooldownRadius;
 
-    // Background circle
-    this.cooldownGraphics.fillStyle(0x222233, 1);
+    // Background circle — paper with pen outline
+    this.cooldownGraphics.fillStyle(0xf5f0e8, 1);
     this.cooldownGraphics.fillCircle(cx, cy, r);
+    this.cooldownGraphics.lineStyle(1.5, 0x222233, 0.4);
+    this.cooldownGraphics.strokeCircle(cx, cy, r);
 
     if (ready) {
-      this.cooldownGraphics.lineStyle(3, 0x44ff44, 0.6 + Math.sin(Date.now() * 0.005) * 0.3);
+      this.cooldownGraphics.lineStyle(2, 0x338833, 0.5 + Math.sin(Date.now() * 0.005) * 0.3);
       this.cooldownGraphics.strokeCircle(cx, cy, r + 3);
-      this.cooldownGraphics.fillStyle(0x44ff44, 0.3);
+      this.cooldownGraphics.fillStyle(0x338833, 0.15);
       this.cooldownGraphics.fillCircle(cx, cy, r);
       this.skillStatusText.setText('READY');
-      this.skillStatusText.setColor('#44ff44');
+      this.skillStatusText.setColor('#338833');
     } else {
       const remaining = skillManager.getActiveCooldownRemaining();
       this.skillStatusText.setText(`${(remaining / 1000).toFixed(1)}s`);
-      this.skillStatusText.setColor('#ff6644');
+      this.skillStatusText.setColor('#cc5533');
 
       const fillAngle = (1 - percent) * Math.PI * 2;
-      this.cooldownGraphics.fillStyle(0xff4422, 0.5);
+      this.cooldownGraphics.fillStyle(0xcc5533, 0.3);
       this.cooldownGraphics.slice(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + fillAngle, true);
       this.cooldownGraphics.fillPath();
 
-      this.cooldownGraphics.lineStyle(2, 0xff4422, 0.7);
+      this.cooldownGraphics.lineStyle(1.5, 0xcc5533, 0.5);
       this.cooldownGraphics.strokeCircle(cx, cy, r);
     }
 
-    // Inner icon
-    this.cooldownGraphics.fillStyle(0xff6600, ready ? 1 : 0.4);
-    this.cooldownGraphics.fillCircle(cx, cy, 6);
+    // Inner icon — ink dot
+    this.cooldownGraphics.fillStyle(0x222233, ready ? 0.7 : 0.3);
+    this.cooldownGraphics.fillCircle(cx, cy, 5);
   }
 }

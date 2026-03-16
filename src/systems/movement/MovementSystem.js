@@ -87,4 +87,15 @@ export class MovementSystem {
       }
     }
   }
+
+  destroy() {
+    // Exit all active movement behaviors to kill tweens
+    for (const enemy of this.registeredEnemies) {
+      if (enemy._movementBehavior) {
+        enemy._movementBehavior.exit(enemy, null, enemy.scene);
+        enemy._movementBehavior = null;
+      }
+    }
+    this.registeredEnemies = [];
+  }
 }

@@ -2,10 +2,10 @@ const DEFAULT_OPTS = {
   lifetime: 700,
   riseSpeed: 55,
   fontSize: 16,
-  color: '#ffffff',
-  critColor: '#ffdd00',
+  color: '#333344',
+  critColor: '#cc3333',
   critThreshold: 10,
-  outlineColor: '#000000',
+  outlineColor: '#f5f0e8',
   outlineThickness: 2
 };
 

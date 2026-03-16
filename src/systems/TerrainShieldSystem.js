@@ -159,4 +159,14 @@ export class TerrainShieldSystem {
   isShieldTile(tile) {
     return !!tile._shieldOwner;
   }
+
+  destroy() {
+    for (const shieldData of this.shields) {
+      for (const tile of shieldData.tiles) {
+        tile.active = false;
+        if (tile.graphics) tile.graphics.destroy();
+      }
+    }
+    this.shields = [];
+  }
 }
