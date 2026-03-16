@@ -103,11 +103,20 @@ export class NavigationAgent {
   clampToArena(enemy) {
     const halfW = (enemy.width || CELL_WIDTH) / 2;
     const halfH = (enemy.height || CELL_HEIGHT) / 2;
-    if (enemy.x < halfW) enemy.x = halfW;
-    if (enemy.x + halfW > ARENA_WIDTH) enemy.x = ARENA_WIDTH - halfW;
-    if (enemy.y < halfH) enemy.y = halfH;
+
+    // Expand bounds for terrain shield if present
+    const shieldSys = enemy.scene && enemy.scene.terrainShieldSystem;
+    const expansion = shieldSys ? shieldSys.getShieldBoundsExpansion(enemy) : null;
+    const extraL = expansion ? expansion.extraLeft : 0;
+    const extraR = expansion ? expansion.extraRight : 0;
+    const extraT = expansion ? expansion.extraTop : 0;
+    const extraB = expansion ? expansion.extraBottom : 0;
+
+    if (enemy.x - halfW - extraL < 0) enemy.x = halfW + extraL;
+    if (enemy.x + halfW + extraR > ARENA_WIDTH) enemy.x = ARENA_WIDTH - halfW - extraR;
+    if (enemy.y - halfH - extraT < 0) enemy.y = halfH + extraT;
     const maxY = ENEMY_ARENA_MAX_ROW * CELL_HEIGHT;
-    if (enemy.y + halfH > maxY) enemy.y = maxY - halfH;
+    if (enemy.y + halfH + extraB > maxY) enemy.y = maxY - halfH - extraB;
   }
 
   invalidatePath() {

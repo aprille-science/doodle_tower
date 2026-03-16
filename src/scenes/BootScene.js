@@ -18,6 +18,8 @@ export default class BootScene extends Phaser.Scene {
     this.load.json('hunter_01', 'src/data/enemies/hunter_01.json');
     this.load.json('guardian_01', 'src/data/enemies/guardian_01.json');
     this.load.json('berserker_01', 'src/data/enemies/berserker_01.json');
+    this.load.json('sentinel_01', 'src/data/enemies/sentinel_01.json');
+    this.load.json('boss_sentinel', 'src/data/enemies/boss_sentinel.json');
 
     // Attack patterns
     this.load.json('pattern_stomp', 'src/data/attack_patterns/pattern_stomp.json');
@@ -36,6 +38,7 @@ export default class BootScene extends Phaser.Scene {
     this.load.json('map_hunter', 'src/data/maps/map_hunter.json');
     this.load.json('map_guardian', 'src/data/maps/map_guardian.json');
     this.load.json('map_berserker', 'src/data/maps/map_berserker.json');
+    this.load.json('map_sentinel', 'src/data/maps/map_sentinel.json');
     this.load.json('map_01', 'src/data/maps/map_01.json');
 
     // Loading text

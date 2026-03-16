@@ -13,12 +13,14 @@ const ENEMY_COLORS = {
   hunter_01: { main: 0x4488cc, accent: '#4488cc', name: 'Hunter' },
   guardian_01: { main: 0xccaa44, accent: '#ccaa44', name: 'Guardian' },
   berserker_01: { main: 0xcc4444, accent: '#cc4444', name: 'Berserker' },
+  sentinel_01: { main: 0x667788, accent: '#667788', name: 'Sentinel' },
+  boss_sentinel: { main: 0x8899aa, accent: '#8899aa', name: 'Iron Bastion' },
   boss_01: { main: 0xff4400, accent: '#ff4400', name: 'Stone Sentinel' }
 };
 
 const MAP_IDS = [
   'map_wanderer', 'map_dancer', 'map_hunter',
-  'map_guardian', 'map_berserker', 'map_01'
+  'map_guardian', 'map_berserker', 'map_sentinel', 'map_01'
 ];
 
 const CARD_W = 340;

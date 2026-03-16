@@ -19,6 +19,10 @@ export class CompositeBehavior extends BaseBehavior {
     this.stateMachine.exit(enemy, player, scene);
   }
 
+  setSpeedScale(scale) {
+    this.stateMachine.setSpeedScale(scale);
+  }
+
   triggerReaction(triggerName) {
     this.stateMachine.triggerReaction(triggerName);
   }

@@ -1,0 +1,51 @@
+{
+  "id": "sentinel_01",
+  "name": "Sentinel",
+  "hp": 70,
+  "contactDamage": 6,
+  "attackDamage": 0.8,
+  "phases": [
+    {
+      "phase": 0,
+      "hpThreshold": 1.0,
+      "attackPatterns": ["pattern_spread"],
+      "attackIntervalMs": 3200
+    },
+    {
+      "phase": 1,
+      "hpThreshold": 0.4,
+      "attackPatterns": ["pattern_spread"],
+      "attackIntervalMs": 2400,
+      "speedMultiplier": 1.3
+    }
+  ],
+  "size": { "cols": 1, "rows": 1 },
+  "terrainShield": {
+    "sides": ["top", "bottom"],
+    "hp": 3,
+    "color": "0x886644"
+  },
+  "movementBehavior": {
+    "type": "composite",
+    "phases": [
+      {
+        "hpThreshold": 1.0,
+        "loop": true,
+        "steps": [
+          { "type": "patrol", "speed": 60, "durationMs": 3000 },
+          { "type": "chase", "speed": 80, "predictionFactor": 0.2, "durationMs": 2000 }
+        ]
+      },
+      {
+        "hpThreshold": 0.4,
+        "loop": true,
+        "steps": [
+          { "type": "chase", "speed": 110, "predictionFactor": 0.5, "durationMs": 3000 }
+        ]
+      }
+    ],
+    "reactions": [
+      { "trigger": "on_hit", "behavior": { "type": "run", "speed": 150, "durationMs": 400 }, "cooldownMs": 2000 }
+    ]
+  }
+}
