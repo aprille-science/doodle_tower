@@ -1,6 +1,6 @@
 import {
   CELL_WIDTH, CELL_HEIGHT, CANVAS_WIDTH, ARENA_HEIGHT,
-  MOMENTUM_INFLUENCE_FACTOR, GAME_SPEED_SCALE
+  MOMENTUM_INFLUENCE_FACTOR, GAME_SPEED_SCALE, PLAYER_SPEED_SCALE
 } from '../constants.js';
 
 export default class Player {
@@ -12,10 +12,11 @@ export default class Player {
     this.maxShieldHP = data.shieldHP;
     this.contactDamage = data.contactDamage;
     this.radius = data.radius;
-    this.maxSpeed = data.maxSpeed * GAME_SPEED_SCALE;
+    const playerScale = GAME_SPEED_SCALE * PLAYER_SPEED_SCALE;
+    this.maxSpeed = data.maxSpeed * playerScale;
 
-    this.vx = data.initialVelocityX * GAME_SPEED_SCALE;
-    this.vy = data.initialVelocityY * GAME_SPEED_SCALE;
+    this.vx = data.initialVelocityX * playerScale;
+    this.vy = data.initialVelocityY * playerScale;
 
     // Start above platform center
     this.x = CANVAS_WIDTH / 2;

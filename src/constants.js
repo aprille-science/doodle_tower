@@ -34,6 +34,12 @@ export const ENEMY_SEPARATION_FORCE = 60;
 // Global speed scale (applied to everything except platform)
 export const GAME_SPEED_SCALE = 0.7;
 
+// Player speed multiplier (on top of GAME_SPEED_SCALE)
+export const PLAYER_SPEED_SCALE = 1.3;
+
+// Orbiting fireballs angular speed multiplier
+export const ORBIT_SPIN_MULTIPLIER = 3.0;
+
 // Grid Visuals
 export const GRID_LINE_ALPHA = 0.08;
 export const CELL_HIGHLIGHT_ALPHA = 0.35;

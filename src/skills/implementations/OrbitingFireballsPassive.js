@@ -1,5 +1,5 @@
 import { BasePassiveSkill } from '../BasePassiveSkill.js';
-import { GAME_SPEED_SCALE } from '../../constants.js';
+import { ORBIT_SPIN_MULTIPLIER } from '../../constants.js';
 
 export class OrbitingFireballsPassive extends BasePassiveSkill {
   constructor(config, player, scene) {
@@ -25,7 +25,7 @@ export class OrbitingFireballsPassive extends BasePassiveSkill {
     if (!this.player.alive) return;
 
     const dtSec = dt / 1000;
-    this.angle += (this.config.angularSpeed || 180) * GAME_SPEED_SCALE * dtSec;
+    this.angle += (this.config.angularSpeed || 180) * ORBIT_SPIN_MULTIPLIER * dtSec;
 
     const count = this.fireballs.length;
     const orbitRadius = this.config.orbitRadius || 55;

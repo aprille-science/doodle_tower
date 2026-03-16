@@ -10,10 +10,9 @@ export default class Platform {
     this.height = CELL_HEIGHT * 0.5;
     this.y = PLATFORM_ROW * CELL_HEIGHT;
     this.x = (CANVAS_WIDTH - this.width) / 2;
+    this.speed = 600;
+    // momentum is still exposed for player bounce interaction
     this.momentum = 0;
-    this.speed = 400;
-    this.momentumDecay = 3.0;
-    this.momentumAccel = 5.0;
 
     this.graphics = scene.add.graphics();
     this.cursors = scene.input.keyboard.addKeys({
@@ -33,19 +32,9 @@ export default class Platform {
     if (this.cursors.left.isDown || this.cursors.a.isDown) dir -= 1;
     if (this.cursors.right.isDown || this.cursors.d.isDown) dir += 1;
 
-    if (dir !== 0) {
-      this.momentum += dir * this.momentumAccel * dt;
-      this.momentum = Phaser.Math.Clamp(this.momentum, -1, 1);
-    } else {
-      // Decay momentum toward 0
-      if (this.momentum > 0) {
-        this.momentum = Math.max(0, this.momentum - this.momentumDecay * dt);
-      } else if (this.momentum < 0) {
-        this.momentum = Math.min(0, this.momentum + this.momentumDecay * dt);
-      }
-    }
-
-    this.x += this.momentum * this.speed * dt;
+    // Static velocity: move at full speed immediately, stop immediately
+    this.momentum = dir;
+    this.x += dir * this.speed * dt;
 
     // Clamp to arena bounds
     if (this.x < 0) { this.x = 0; this.momentum = 0; }
