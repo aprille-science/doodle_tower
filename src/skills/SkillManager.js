@@ -1,12 +1,20 @@
 import { OrbitingFireballsPassive } from './implementations/OrbitingFireballsPassive.js';
 import { MegaFireballActive } from './implementations/MegaFireballActive.js';
+import { IceArmorPassive } from './implementations/IceArmorPassive.js';
+import { FrostNovaActive } from './implementations/FrostNovaActive.js';
+import { StormBoltPassive } from './implementations/StormBoltPassive.js';
+import { ThunderStrikeActive } from './implementations/ThunderStrikeActive.js';
 
 const PASSIVE_MAP = {
-  orbiting_fireballs: OrbitingFireballsPassive
+  orbiting_fireballs: OrbitingFireballsPassive,
+  ice_armor: IceArmorPassive,
+  storm_bolt: StormBoltPassive
 };
 
 const ACTIVE_MAP = {
-  mega_fireball: MegaFireballActive
+  mega_fireball: MegaFireballActive,
+  frost_nova: FrostNovaActive,
+  thunder_strike: ThunderStrikeActive
 };
 
 export class SkillManager {
@@ -66,6 +74,12 @@ export class SkillManager {
   getActiveCooldownRemaining() {
     if (this.activeSkill) return Math.max(0, this.activeSkill.cooldownRemaining);
     return 0;
+  }
+
+  getActiveSkillName() {
+    if (!this.activeSkill) return '';
+    const type = this.activeSkill.config.type || '';
+    return type.replace(/_/g, ' ').toUpperCase();
   }
 
   deactivate() {

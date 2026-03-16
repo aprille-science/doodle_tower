@@ -256,7 +256,8 @@ export default class MapSelectScene extends Phaser.Scene {
   }
 
   selectMap(mapId) {
-    this.scene.start('GameScene', { mapId });
+    const characterId = this.registry.get('selectedCharacter') || 'player_default';
+    this.scene.start('GameScene', { mapId, characterId });
   }
 
   update() {

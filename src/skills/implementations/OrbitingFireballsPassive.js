@@ -76,6 +76,10 @@ export class OrbitingFireballsPassive extends BasePassiveSkill {
                 enemy.takeDamage(dmg);
                 this.scene.events.emit('enemyDamaged', enemy, dmg);
               }
+              // Inflict BURNED status
+              if (this.scene.statusEffectManager) {
+                this.scene.statusEffectManager.applyStatus(enemy, 'burned', 2000);
+              }
               this.damageHitMap.set(key, now);
             }
             break; // One fireball hit per enemy per check

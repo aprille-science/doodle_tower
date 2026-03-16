@@ -88,8 +88,12 @@ export default class UIScene extends Phaser.Scene {
     this.cooldownCenterY = panelY + 80;
     this.cooldownRadius = 18;
 
+    // Skill label — set dynamically from player's skill manager
+    const skillName = this.player.skillManager
+      ? this.player.skillManager.getActiveSkillName()
+      : 'SKILL';
     this.skillLabel = this.add.text(
-      this.cooldownCenterX + 28, panelY + 66, 'MEGA FIREBALL',
+      this.cooldownCenterX + 28, panelY + 66, skillName,
       { fontSize: '11px', color: '#ff6644', fontFamily: 'monospace' }
     );
     this.skillStatusText = this.add.text(

@@ -1,11 +1,13 @@
 import { BaseActiveSkill } from '../BaseActiveSkill.js';
 import Projectile from '../../entities/Projectile.js';
+import { CELL_WIDTH, CELL_HEIGHT } from '../../constants.js';
 
 const OCTAGONAL_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315];
 
 export class MegaFireballActive extends BaseActiveSkill {
   constructor(config, player, scene) {
     super(config, player, scene);
+    this.trackedProjectiles = [];
   }
 
   cast() {
@@ -33,12 +35,34 @@ export class MegaFireballActive extends BaseActiveSkill {
         damageType: 'fire'
       });
       proj.isPlayerProjectile = true;
+      proj.inflictStatus = { type: 'burned', durationMs: 5000 };
 
       if (this.scene.attackSystem) {
         this.scene.attackSystem.projectiles.push(proj);
       }
+
+      this.trackedProjectiles.push(proj);
     }
 
     this.triggerCooldown();
+  }
+
+  update(dt) {
+    super.update(dt);
+
+    // Track projectile positions and lay blaze tiles
+    const blazeMgr = this.scene.blazeTrailManager;
+    if (!blazeMgr) return;
+
+    for (let i = this.trackedProjectiles.length - 1; i >= 0; i--) {
+      const proj = this.trackedProjectiles[i];
+      if (!proj.active) {
+        this.trackedProjectiles.splice(i, 1);
+        continue;
+      }
+      const col = Math.floor(proj.x / CELL_WIDTH);
+      const row = Math.floor(proj.y / CELL_HEIGHT);
+      blazeMgr.addBlaze(col, row, 5000, 5000);
+    }
   }
 }

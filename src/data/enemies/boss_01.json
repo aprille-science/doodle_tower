@@ -5,6 +5,7 @@
   "contactDamage": 15,
   "attackDamage": 1.0,
   "isBoss": true,
+  "statusImmunities": ["frozen"],
   "phases": [
     {
       "phase": 0,

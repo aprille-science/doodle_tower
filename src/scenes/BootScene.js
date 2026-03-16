@@ -8,6 +8,8 @@ export default class BootScene extends Phaser.Scene {
   preload() {
     // Load JSON data assets
     this.load.json('player_default', 'src/data/players/player_default.json');
+    this.load.json('player_frost_knight', 'src/data/players/player_frost_knight.json');
+    this.load.json('player_storm_archer', 'src/data/players/player_storm_archer.json');
 
     // Enemies
     this.load.json('boss_01', 'src/data/enemies/boss_01.json');

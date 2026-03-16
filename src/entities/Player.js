@@ -29,6 +29,7 @@ export default class Player {
     this.invulnTimer = 0;
 
     this.alive = true;
+    this.damageReduction = 1; // multiplier, 0.5 = 50% less damage
 
     this.graphics = scene.add.graphics();
     this.shieldGraphics = scene.add.graphics();
