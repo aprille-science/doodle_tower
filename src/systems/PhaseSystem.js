@@ -33,9 +33,9 @@ export default class PhaseSystem {
   triggerPhaseTransition(enemy, newPhase) {
     enemy.startPhaseTransition(newPhase);
 
-    // Pause attack system during transition
+    // Pause attack system during transition (preserve player projectiles)
     this.attackSystem.pauseForTransition(PHASE_TRANSITION_PAUSE_MS);
-    this.attackSystem.clearAll();
+    this.attackSystem.clearEnemyAttacks();
 
     // Emit phase transition event for movement system
     this.scene.events.emit('phaseTransition', { enemy, phase: newPhase });
