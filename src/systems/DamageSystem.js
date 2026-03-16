@@ -97,22 +97,7 @@ export default class DamageSystem {
       }
     }
 
-    // 4. Blaze tile damage to enemies
-    if (this.scene.blazeTiles && enemies) {
-      for (const blaze of this.scene.blazeTiles) {
-        if (!blaze.active) continue;
-        for (const enemy of enemies) {
-          if (!enemy.alive) continue;
-          const eCol = Math.floor(enemy.x / 50); // CELL_WIDTH
-          const eRow = Math.floor(enemy.y / 50); // CELL_HEIGHT
-          if (eCol === blaze.col && eRow === blaze.row) {
-            if (statusMgr) {
-              statusMgr.applyStatus(enemy, 'burned', blaze.burnDurationMs || 5000);
-            }
-          }
-        }
-      }
-    }
+    // Terrain effect tiles (blaze/frost/electric) are handled by TerrainEffectManager
   }
 
   applyDamageToPlayer(amount, worldX, worldY) {

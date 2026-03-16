@@ -49,17 +49,20 @@ export default class PhysicsSystem {
 
     const dmgSys = this.scene.damageSystem;
 
-    // Player damages enemy
+    // Player damages enemy on contact (uses player's attack stat)
+    const playerDmg = player.attackDamage || player.contactDamage;
     if (dmgSys) {
-      dmgSys.applyDamageToEnemy(enemy, player.contactDamage);
+      dmgSys.applyDamageToEnemy(enemy, playerDmg);
     } else {
-      enemy.takeDamage(player.contactDamage);
+      enemy.takeDamage(playerDmg);
     }
 
-    // Enemy damages player
-    const enemyContactDmg = enemy.data?.contactDamage || 0;
-    if (enemyContactDmg > 0 && dmgSys) {
-      dmgSys.applyDamageToPlayer(enemyContactDmg, enemy.x, enemy.y);
+    // Enemy only damages player if actively charging
+    if (enemy.isCharging) {
+      const enemyContactDmg = enemy.data?.contactDamage || 0;
+      if (enemyContactDmg > 0 && dmgSys) {
+        dmgSys.applyDamageToPlayer(enemyContactDmg, enemy.x, enemy.y);
+      }
     }
 
     // Bounce player away from enemy

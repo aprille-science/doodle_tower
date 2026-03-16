@@ -33,6 +33,8 @@ export default class Enemy {
     this._movementBehavior = null;
     // Charge tint flag
     this._chargeTint = false;
+    // True when enemy is actively charging (deals contact damage)
+    this.isCharging = false;
     // Visibility flag for teleport
     this._visible = true;
 

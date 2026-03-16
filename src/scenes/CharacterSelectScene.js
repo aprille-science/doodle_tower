@@ -13,23 +13,23 @@ const CHARACTERS = [
     description: 'Orbiting fireballs burn enemies on contact. Mega Fireball leaves blazing trails.',
     color: 0xff6600,
     avatarColor: 0xff6600,
-    stats: { hp: 100, shield: 40, passive: 'Orbiting Fireballs', active: 'Mega Fireball' }
+    stats: { hp: 100, shield: 40, atk: 8, passive: 'Orbiting Fireballs', active: 'Mega Fireball' }
   },
   {
     dataId: 'player_frost_knight',
     name: 'Frost Knight',
-    description: 'Heavy armor halves incoming damage. Frost Nova freezes all nearby enemies.',
+    description: 'Heavy armor halves incoming damage. Frost Nova freezes and leaves frost terrain.',
     color: 0x44ccff,
     avatarColor: 0x44ccff,
-    stats: { hp: 120, shield: 60, passive: 'Ice Armor (50% DR)', active: 'Frost Nova' }
+    stats: { hp: 120, shield: 60, atk: 12, passive: 'Ice Armor (50% DR)', active: 'Frost Nova' }
   },
   {
     dataId: 'player_storm_archer',
     name: 'Storm Archer',
-    description: 'Auto-fires lightning bolts that paralyze. Thunder Strike pierces all enemies.',
+    description: 'Auto-fires lightning bolts. Thunder Strike pierces and leaves electric terrain.',
     color: 0xffee00,
     avatarColor: 0xffee00,
-    stats: { hp: 80, shield: 30, passive: 'Storm Bolt (3s)', active: 'Thunder Strike' }
+    stats: { hp: 80, shield: 30, atk: 5, passive: 'Storm Bolt (3s)', active: 'Thunder Strike' }
   }
 ];
 
@@ -56,7 +56,7 @@ export default class CharacterSelectScene extends Phaser.Scene {
 
     // Character cards
     const cardW = 220;
-    const cardH = 380;
+    const cardH = 400;
     const gap = 24;
     const totalW = CHARACTERS.length * cardW + (CHARACTERS.length - 1) * gap;
     const startX = (CANVAS_WIDTH - totalW) / 2 + cardW / 2;
@@ -145,6 +145,7 @@ export default class CharacterSelectScene extends Phaser.Scene {
     const statLines = [
       { label: 'HP', value: char.stats.hp },
       { label: 'SHIELD', value: char.stats.shield },
+      { label: 'ATK', value: char.stats.atk },
       { label: 'PASSIVE', value: char.stats.passive },
       { label: 'ACTIVE', value: char.stats.active }
     ];

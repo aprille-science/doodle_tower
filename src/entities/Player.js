@@ -10,6 +10,7 @@ export default class Player {
     this.maxHp = data.hp;
     this.shieldHP = data.shieldHP;
     this.maxShieldHP = data.shieldHP;
+    this.attackDamage = data.attackDamage || data.contactDamage;
     this.contactDamage = data.contactDamage;
     this.radius = data.radius;
     const playerScale = GAME_SPEED_SCALE * PLAYER_SPEED_SCALE;
