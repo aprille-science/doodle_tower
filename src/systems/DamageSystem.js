@@ -1,3 +1,4 @@
+import { CELL_WIDTH, CELL_HEIGHT } from '../constants.js';
 import { flashDamageTint } from '../utils/DamageFlash.js';
 import { FloatingDamageNumber } from '../ui/FloatingDamageNumber.js';
 
@@ -71,6 +72,18 @@ export default class DamageSystem {
         if (!tile.active || !proj.active) continue;
         // Enemy projectiles pass through shield tiles
         if (!proj.isPlayerProjectile && tile._shieldOwner) continue;
+
+        // Shield tiles use bounds-based collision (they move smoothly)
+        if (tile._shieldOwner) {
+          if (physicsSystem.circleRectOverlap(
+            proj.x, proj.y, proj.radius,
+            tile.x, tile.y, CELL_WIDTH, CELL_HEIGHT
+          )) {
+            proj.resolveTerrainHit(tile);
+          }
+          continue;
+        }
+
         if (tile.col === projCol && tile.row === projRow) {
           proj.resolveTerrainHit(tile);
         }
