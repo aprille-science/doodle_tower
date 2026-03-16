@@ -6,6 +6,7 @@
   "initialVelocityX": 180,
   "initialVelocityY": -280,
   "maxSpeed": 450,
+  "attackDamage": 12,
   "contactDamage": 6,
   "radius": 14,
   "passive": {

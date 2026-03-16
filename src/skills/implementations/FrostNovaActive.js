@@ -1,7 +1,5 @@
 import { BaseActiveSkill } from '../BaseActiveSkill.js';
-import { CELL_WIDTH, CELL_HEIGHT } from '../../constants.js';
-import { FloatingDamageNumber } from '../../ui/FloatingDamageNumber.js';
-import { flashDamageTint } from '../../utils/DamageFlash.js';
+import { CELL_WIDTH, CELL_HEIGHT, GRID_COLS, GRID_ROWS } from '../../constants.js';
 
 export class FrostNovaActive extends BaseActiveSkill {
   constructor(config, player, scene) {
@@ -11,7 +9,8 @@ export class FrostNovaActive extends BaseActiveSkill {
   cast() {
     if (!this.isReady()) return;
 
-    const radiusPx = (this.config.radiusTiles || 5) * CELL_WIDTH;
+    const radiusTiles = this.config.radiusTiles || 5;
+    const radiusPx = radiusTiles * CELL_WIDTH;
     const damage = this.config.damage || 30;
     const freezeDuration = this.config.freezeDurationMs || 5000;
 
@@ -26,16 +25,36 @@ export class FrostNovaActive extends BaseActiveSkill {
         const dy = enemy.y - this.player.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist <= radiusPx) {
-          // Apply damage
           if (this.scene.damageSystem) {
             this.scene.damageSystem.applyDamageToEnemy(enemy, damage);
           } else {
             enemy.takeDamage(damage);
             this.scene.events.emit('enemyDamaged', enemy, damage);
           }
-          // Apply FROZEN status
           if (this.scene.statusEffectManager) {
             this.scene.statusEffectManager.applyStatus(enemy, 'frozen', freezeDuration);
+          }
+        }
+      }
+    }
+
+    // Lay frost terrain tiles within radius
+    const terrainMgr = this.scene.terrainEffectManager;
+    if (terrainMgr) {
+      const centerCol = Math.floor(this.player.x / CELL_WIDTH);
+      const centerRow = Math.floor(this.player.y / CELL_HEIGHT);
+      for (let dc = -radiusTiles; dc <= radiusTiles; dc++) {
+        for (let dr = -radiusTiles; dr <= radiusTiles; dr++) {
+          const c = centerCol + dc;
+          const r = centerRow + dr;
+          if (c < 0 || c >= GRID_COLS || r < 0 || r >= GRID_ROWS) continue;
+          // Check within circular radius
+          const tileX = c * CELL_WIDTH + CELL_WIDTH / 2;
+          const tileY = r * CELL_HEIGHT + CELL_HEIGHT / 2;
+          const dx = tileX - this.player.x;
+          const dy = tileY - this.player.y;
+          if (Math.sqrt(dx * dx + dy * dy) <= radiusPx) {
+            terrainMgr.addEffect('frost', c, r, 3000, 3000);
           }
         }
       }

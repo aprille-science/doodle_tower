@@ -1,10 +1,11 @@
 import { BaseActiveSkill } from '../BaseActiveSkill.js';
 import Projectile from '../../entities/Projectile.js';
-import { GAME_SPEED_SCALE } from '../../constants.js';
+import { CELL_WIDTH, CELL_HEIGHT, GAME_SPEED_SCALE } from '../../constants.js';
 
 export class ThunderStrikeActive extends BaseActiveSkill {
   constructor(config, player, scene) {
     super(config, player, scene);
+    this.trackedProjectile = null;
   }
 
   cast() {
@@ -57,6 +58,25 @@ export class ThunderStrikeActive extends BaseActiveSkill {
       this.scene.attackSystem.projectiles.push(proj);
     }
 
+    this.trackedProjectile = proj;
     this.triggerCooldown();
+  }
+
+  update(dt) {
+    super.update(dt);
+
+    // Track projectile and lay electric terrain
+    if (!this.trackedProjectile) return;
+    const terrainMgr = this.scene.terrainEffectManager;
+    if (!terrainMgr) return;
+
+    if (!this.trackedProjectile.active) {
+      this.trackedProjectile = null;
+      return;
+    }
+
+    const col = Math.floor(this.trackedProjectile.x / CELL_WIDTH);
+    const row = Math.floor(this.trackedProjectile.y / CELL_HEIGHT);
+    terrainMgr.addEffect('electric', col, row, 5000, 5000);
   }
 }

@@ -42,6 +42,7 @@ export class ChargeBehavior extends BaseBehavior {
         this.phase = 'charging';
         this._elapsed = 0;
         enemy._chargeTint = false;
+        enemy.isCharging = true;
       }
       return;
     }
@@ -74,5 +75,6 @@ export class ChargeBehavior extends BaseBehavior {
 
   exit(enemy, player, scene) {
     enemy._chargeTint = false;
+    enemy.isCharging = false;
   }
 }

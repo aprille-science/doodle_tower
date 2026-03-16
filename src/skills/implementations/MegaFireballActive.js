@@ -51,8 +51,8 @@ export class MegaFireballActive extends BaseActiveSkill {
     super.update(dt);
 
     // Track projectile positions and lay blaze tiles
-    const blazeMgr = this.scene.blazeTrailManager;
-    if (!blazeMgr) return;
+    const terrainMgr = this.scene.terrainEffectManager;
+    if (!terrainMgr) return;
 
     for (let i = this.trackedProjectiles.length - 1; i >= 0; i--) {
       const proj = this.trackedProjectiles[i];
@@ -62,7 +62,7 @@ export class MegaFireballActive extends BaseActiveSkill {
       }
       const col = Math.floor(proj.x / CELL_WIDTH);
       const row = Math.floor(proj.y / CELL_HEIGHT);
-      blazeMgr.addBlaze(col, row, 5000, 5000);
+      terrainMgr.addEffect('blaze', col, row, 5000, 5000);
     }
   }
 }

@@ -9,7 +9,7 @@ import ShieldSystem from '../systems/ShieldSystem.js';
 import AttackSystem from '../systems/AttackSystem.js';
 import PhaseSystem from '../systems/PhaseSystem.js';
 import { StatusEffectManager } from '../systems/StatusEffectManager.js';
-import { BlazeTrailManager } from '../systems/BlazeTrailManager.js';
+import { TerrainEffectManager } from '../systems/TerrainEffectManager.js';
 import { ObstacleMap } from '../systems/navigation/ObstacleMap.js';
 import { Pathfinder } from '../systems/navigation/Pathfinder.js';
 import { SteeringSystem } from '../systems/navigation/SteeringSystem.js';
@@ -96,10 +96,8 @@ export default class GameScene extends Phaser.Scene {
     // Initialize status effect system
     this.statusEffectManager = new StatusEffectManager(this);
 
-    // Initialize blaze trail system (for Flame Magician)
-    this.blazeTrailManager = new BlazeTrailManager(this);
-    // Alias for DamageSystem blaze tile checks
-    this.blazeTiles = this.blazeTrailManager.tiles;
+    // Initialize terrain effect system (blaze/frost/electric tiles)
+    this.terrainEffectManager = new TerrainEffectManager(this);
 
     // Create sprite HP bars
     this.spriteHPBars = [];
@@ -363,10 +361,8 @@ export default class GameScene extends Phaser.Scene {
     // Status effect system
     this.statusEffectManager.update(delta);
 
-    // Blaze trail system
-    this.blazeTrailManager.update(delta);
-    // Keep alias in sync (array reference changes on splice)
-    this.blazeTiles = this.blazeTrailManager.tiles;
+    // Terrain effect system (blaze/frost/electric tiles)
+    this.terrainEffectManager.update(delta);
 
     // Damage system
     this.damageSystem.update(
