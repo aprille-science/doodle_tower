@@ -9,7 +9,20 @@
     { "enemyId": "berserker_01", "gridPosition": { "col": 7, "row": 3 } },
     { "enemyId": "berserker_01", "gridPosition": { "col": 3, "row": 5 } }
   ],
-  "reinforcements": [],
+  "reinforcements": [
+    {
+      "trigger": "enemy_defeated",
+      "targetEnemyId": "berserker_01",
+      "spawnEnemyId": "wanderer_01",
+      "spawnCount": 2,
+      "spawnAfterMs": 2000,
+      "maxTriggers": 1,
+      "positions": [
+        { "col": 4, "row": 2 },
+        { "col": 11, "row": 2 }
+      ]
+    }
+  ],
   "initialTerrain": [
     {
       "type": "breakable",
