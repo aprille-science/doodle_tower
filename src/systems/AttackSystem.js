@@ -217,6 +217,8 @@ export default class AttackSystem {
       if (this.pauseTimer <= 0) {
         this.paused = false;
       }
+      // Still update player projectiles during pause
+      this.updateProjectiles(delta);
       return;
     }
 
@@ -230,10 +232,17 @@ export default class AttackSystem {
     }
 
     // Update projectiles
+    this.updateProjectiles(delta);
+  }
+
+  updateProjectiles(delta) {
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
-      this.projectiles[i].update(delta);
-      if (!this.projectiles[i].active) {
-        this.projectiles[i].destroy();
+      const proj = this.projectiles[i];
+      // During pause, only update player projectiles
+      if (this.paused && !proj.isPlayerProjectile) continue;
+      proj.update(delta);
+      if (!proj.active) {
+        proj.destroy();
         this.projectiles.splice(i, 1);
       }
     }
@@ -253,6 +262,23 @@ export default class AttackSystem {
       timer.destroy();
     }
     this.attackTimers = [];
+  }
+
+  clearEnemyAttacks() {
+    this.clearTimers();
+    for (const zone of this.attackZones) zone.destroy();
+    this.attackZones = [];
+
+    // Only destroy enemy projectiles, preserve player projectiles
+    const kept = [];
+    for (const proj of this.projectiles) {
+      if (proj.isPlayerProjectile) {
+        kept.push(proj);
+      } else {
+        proj.destroy();
+      }
+    }
+    this.projectiles = kept;
   }
 
   clearAll() {
