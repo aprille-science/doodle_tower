@@ -1,6 +1,7 @@
 {
   "id": "player_sumo_cat",
   "name": "Sumo Cat",
+  "color": "0xff8844",
   "hp": 250,
   "shieldHP": 100,
   "initialVelocityX": 160,

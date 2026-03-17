@@ -104,7 +104,7 @@ export default class TitleScene extends Phaser.Scene {
     // Menu buttons
     const buttonDefs = [
       { label: 'MAP SELECT', key: 'map', locked: false },
-      { label: 'CHARACTER', key: 'character', locked: false },
+      { label: 'TEAM BUILDER', key: 'team', locked: false },
       { label: 'SHOP', key: 'shop', locked: true },
       { label: 'TOWER', key: 'tower', locked: true }
     ];
@@ -209,8 +209,8 @@ export default class TitleScene extends Phaser.Scene {
       case 'map':
         this.scene.start('MapSelectScene');
         break;
-      case 'character':
-        this.scene.start('CharacterSelectScene');
+      case 'team':
+        this.scene.start('TeamBuilderScene');
         break;
     }
   }

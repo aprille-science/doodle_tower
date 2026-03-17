@@ -1,0 +1,11 @@
+{
+  "costCeiling": 100,
+  "characters": [
+    "player_default",
+    "player_frost_knight",
+    "player_storm_archer",
+    "player_science_cat",
+    "player_sumo_cat",
+    "player_mecha_cat"
+  ]
+}

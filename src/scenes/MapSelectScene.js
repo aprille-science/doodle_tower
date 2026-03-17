@@ -267,8 +267,13 @@ export default class MapSelectScene extends Phaser.Scene {
   }
 
   selectMap(mapId) {
-    const characterId = this.registry.get('selectedCharacter') || 'player_default';
-    this.scene.start('GameScene', { mapId, characterId });
+    // Get team from registry, or fall back to default single character
+    let teamData = this.registry.get('teamData');
+    if (!teamData || teamData.length === 0) {
+      const defaultChar = this.cache.json.get('player_default');
+      teamData = defaultChar ? [defaultChar] : [];
+    }
+    this.scene.start('GameScene', { mapId, teamData });
   }
 
   update() {

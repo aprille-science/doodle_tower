@@ -1,6 +1,7 @@
 {
   "id": "player_frost_knight",
   "name": "Soldier Cat",
+  "color": "0x44ccff",
   "hp": 120,
   "shieldHP": 60,
   "initialVelocityX": 180,
