@@ -1,6 +1,7 @@
 {
   "id": "player_default",
   "name": "Wizard Cat",
+  "color": "0xff6600",
   "hp": 100,
   "shieldHP": 40,
   "initialVelocityX": 200,

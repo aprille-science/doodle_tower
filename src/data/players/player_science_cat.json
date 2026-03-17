@@ -1,6 +1,7 @@
 {
   "id": "player_science_cat",
   "name": "Science Cat",
+  "color": "0x66ff22",
   "hp": 100,
   "shieldHP": 50,
   "initialVelocityX": 250,

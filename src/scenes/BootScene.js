@@ -6,6 +6,9 @@ export default class BootScene extends Phaser.Scene {
   }
 
   preload() {
+    // Roster
+    this.load.json('roster', 'src/data/roster.json');
+
     // Load JSON data assets
     this.load.json('player_default', 'src/data/players/player_default.json');
     this.load.json('player_frost_knight', 'src/data/players/player_frost_knight.json');

@@ -1,6 +1,7 @@
 {
   "id": "player_mecha_cat",
   "name": "Mecha Cat",
+  "color": "0xcc44ff",
   "hp": 150,
   "shieldHP": 50,
   "initialVelocityX": 220,

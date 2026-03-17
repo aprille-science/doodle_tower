@@ -1,6 +1,7 @@
 {
   "id": "player_storm_archer",
   "name": "Archer Cat",
+  "color": "0xffee00",
   "hp": 80,
   "shieldHP": 30,
   "initialVelocityX": 220,
