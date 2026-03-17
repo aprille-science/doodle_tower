@@ -21,7 +21,7 @@ export const PARRY_WINDOW_MS = 150;
 export const PARRY_SLOWDOWN_SCALE = 0.15;
 export const PARRY_SLOWDOWN_DURATION_MS = 600;
 export const SHIELD_BREAK_LOCKOUT_MS = 3000;
-export const SHIELD_DRAIN_RATE = 20; // shield HP drained per second while active
+export const SHIELD_DRAIN_RATE = 2; // shield HP drained per second while active (~0.5s per point)
 
 // Phase & Attack
 export const PHASE_TRANSITION_PAUSE_MS = 1500;
