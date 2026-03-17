@@ -1,0 +1,35 @@
+{
+  "id": "player_mecha_cat",
+  "name": "Mecha Cat",
+  "hp": 150,
+  "shieldHP": 50,
+  "initialVelocityX": 220,
+  "initialVelocityY": -320,
+  "speed": 550,
+  "maxSpeed": 550,
+  "cost": 50,
+  "attackDamage": 10,
+  "contactDamage": 5,
+  "radius": 12,
+  "passive": {
+    "type": "orbiting_fireballs",
+    "count": 3,
+    "orbitRadius": 55,
+    "angularSpeed": 180,
+    "damage": 2,
+    "damageTickCooldownMs": 500,
+    "ignoreTerrain": true,
+    "color": "0xcc44ff",
+    "radius": 8
+  },
+  "active": {
+    "type": "deploy_clones",
+    "cooldownMs": 15000,
+    "durationMs": 5000,
+    "cloneCount": 4,
+    "cloneDamage": 10,
+    "cloneRadius": 18,
+    "cloneSpeed": 400,
+    "burnDurationMs": 2000
+  }
+}

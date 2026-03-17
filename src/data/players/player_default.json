@@ -1,10 +1,13 @@
 {
   "id": "player_default",
+  "name": "Wizard Cat",
   "hp": 100,
   "shieldHP": 40,
   "initialVelocityX": 200,
   "initialVelocityY": -300,
+  "speed": 500,
   "maxSpeed": 500,
+  "cost": 25,
   "attackDamage": 8,
   "contactDamage": 4,
   "radius": 12,

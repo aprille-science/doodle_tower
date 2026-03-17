@@ -1,0 +1,25 @@
+{
+  "id": "player_science_cat",
+  "name": "Science Cat",
+  "hp": 100,
+  "shieldHP": 50,
+  "initialVelocityX": 250,
+  "initialVelocityY": -360,
+  "speed": 715,
+  "maxSpeed": 715,
+  "cost": 25,
+  "attackDamage": 5,
+  "contactDamage": 3,
+  "radius": 11,
+  "passive": {
+    "type": "toxic_touch",
+    "poisonDurationMs": 2000
+  },
+  "active": {
+    "type": "toxic_burst",
+    "cooldownMs": 10000,
+    "damage": 10,
+    "radiusTiles": 5,
+    "poisonDurationMs": 10000
+  }
+}

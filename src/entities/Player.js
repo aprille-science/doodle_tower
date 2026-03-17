@@ -1,6 +1,7 @@
 import {
   CELL_WIDTH, CELL_HEIGHT, CANVAS_WIDTH, ARENA_HEIGHT,
-  MOMENTUM_INFLUENCE_FACTOR, GAME_SPEED_SCALE, PLAYER_SPEED_SCALE
+  MOMENTUM_INFLUENCE_FACTOR, GAME_SPEED_SCALE, PLAYER_SPEED_SCALE,
+  SHIELD_DRAIN_RATE
 } from '../constants.js';
 
 export default class Player {
@@ -14,7 +15,8 @@ export default class Player {
     this.contactDamage = data.contactDamage;
     this.radius = data.radius;
     const playerScale = GAME_SPEED_SCALE * PLAYER_SPEED_SCALE;
-    this.maxSpeed = data.maxSpeed * playerScale;
+    this.speed = (data.speed || data.maxSpeed) * playerScale;
+    this.maxSpeed = this.speed;
 
     this.vx = data.initialVelocityX * playerScale;
     this.vy = data.initialVelocityY * playerScale;
@@ -59,6 +61,9 @@ export default class Player {
       this.vy = Math.abs(this.vy);
     }
 
+    // Keep speed constant
+    this.normalizeSpeed();
+
     // Invulnerability timer
     if (this.invulnTimer > 0) {
       this.invulnTimer -= delta;
@@ -75,6 +80,15 @@ export default class Player {
       if (this.parryWindowTimer < 0) this.parryWindowTimer = 0;
     }
 
+    // Shield drain while active
+    if (this.shieldActive && this.shieldHP > 0) {
+      this.shieldHP -= SHIELD_DRAIN_RATE * dt;
+      if (this.shieldHP <= 0) {
+        this.shieldHP = 0;
+        this.shieldBroken = true;
+      }
+    }
+
     this.draw();
   }
 
@@ -86,11 +100,19 @@ export default class Player {
         this.vy > 0) {
       this.y = platform.getTop() - this.radius;
       this.vy = -Math.abs(this.vy);
-      this.vx += platform.momentum * MOMENTUM_INFLUENCE_FACTOR;
-      this.vx = Phaser.Math.Clamp(this.vx, -this.maxSpeed, this.maxSpeed);
+      // Normalize velocity to constant speed
+      this.normalizeSpeed();
       return true;
     }
     return false;
+  }
+
+  normalizeSpeed() {
+    const mag = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    if (mag > 0) {
+      this.vx = (this.vx / mag) * this.speed;
+      this.vy = (this.vy / mag) * this.speed;
+    }
   }
 
   checkFellBelow() {
@@ -113,21 +135,20 @@ export default class Player {
 
   takeDamage(amount, bypassShield = false) {
     if (this.invulnTimer > 0) return;
+    if (this._rageInvuln) return;
 
     if (!bypassShield && this.shieldActive && this.shieldHP > 0) {
-      this.shieldHP -= amount;
-      if (this.shieldHP <= 0) {
-        this.shieldHP = 0;
-        this.shieldBroken = true;
-      }
-    } else {
-      this.hp -= amount;
-      if (this.hp <= 0) {
-        this.hp = 0;
-        this.alive = false;
-      }
+      // Shield is active and has charge — block all damage
+      this.invulnTimer = 200;
+      return;
     }
-    this.invulnTimer = 200; // small invuln after any hit
+
+    this.hp -= amount;
+    if (this.hp <= 0) {
+      this.hp = 0;
+      this.alive = false;
+    }
+    this.invulnTimer = 200;
   }
 
   activateShield() {

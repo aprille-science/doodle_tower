@@ -1,0 +1,25 @@
+{
+  "id": "player_sumo_cat",
+  "name": "Sumo Cat",
+  "hp": 250,
+  "shieldHP": 100,
+  "initialVelocityX": 160,
+  "initialVelocityY": -240,
+  "speed": 413,
+  "maxSpeed": 413,
+  "cost": 35,
+  "attackDamage": 15,
+  "contactDamage": 8,
+  "radius": 16,
+  "passive": {
+    "type": "terrain_crusher",
+    "terrainDamageMultiplier": 5
+  },
+  "active": {
+    "type": "rage_mode",
+    "cooldownMs": 15000,
+    "durationMs": 5000,
+    "attackMultiplier": 5,
+    "invulnerable": true
+  }
+}
