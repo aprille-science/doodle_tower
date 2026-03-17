@@ -61,11 +61,11 @@ export default class TeamBuilderScene extends Phaser.Scene {
     // Create scrollable roster
     this.createRoster();
 
+    // Create buttons before team area (team area calls refreshAll which needs startBtn)
+    this.createButtons();
+
     // Create team area
     this.createTeamArea();
-
-    // Create buttons
-    this.createButtons();
 
     // Scroll input
     this.input.on('wheel', (_p, _g, _dx, dy) => {
@@ -552,11 +552,12 @@ export default class TeamBuilderScene extends Phaser.Scene {
   }
 
   refreshStartButton() {
+    if (!this.startBtn) return;
     const hasMember = this.teamSlots.some(s => s);
-    if (this.startBtn) {
+    if (this.startBtn.zone.input) {
       this.startBtn.zone.input.enabled = hasMember;
-      this.startBtn.label.setAlpha(hasMember ? 1 : 0.3);
     }
+    this.startBtn.label.setAlpha(hasMember ? 1 : 0.3);
   }
 
   // ============================================================
