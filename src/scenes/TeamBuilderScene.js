@@ -39,6 +39,7 @@ export default class TeamBuilderScene extends Phaser.Scene {
     this.teamSlots = [null, null, null, null];
     this.selectedCardIndex = -1; // index into allCharacters
     this.dragSlot = -1;
+    this.dragRosterIndex = -1;
     this.dragGhost = null;
 
     // Draw background grid
@@ -60,11 +61,11 @@ export default class TeamBuilderScene extends Phaser.Scene {
     // Create scrollable roster
     this.createRoster();
 
+    // Create buttons before team area (team area calls refreshAll which needs startBtn)
+    this.createButtons();
+
     // Create team area
     this.createTeamArea();
-
-    // Create buttons
-    this.createButtons();
 
     // Scroll input
     this.input.on('wheel', (_p, _g, _dx, dy) => {
@@ -207,6 +208,11 @@ export default class TeamBuilderScene extends Phaser.Scene {
     zone.on('pointerover', () => { if (!this.isCharOnTeam(index)) hoverOverlay.setVisible(true); });
     zone.on('pointerout', () => hoverOverlay.setVisible(false));
     zone.on('pointerup', () => {
+      // Don't handle click if we just finished a drag
+      if (this._justDraggedRoster) {
+        this._justDraggedRoster = false;
+        return;
+      }
       if (this.isCharOnTeam(index)) return;
       if (this.isCharUnavailable(index)) return;
       if (this.selectedCardIndex === index) {
@@ -216,6 +222,31 @@ export default class TeamBuilderScene extends Phaser.Scene {
       }
       this.refreshAll();
     });
+
+    // Drag support for roster cards
+    zone.on('dragstart', (pointer) => {
+      if (this.isCharOnTeam(index)) return;
+      if (this.isCharUnavailable(index)) return;
+      this.dragRosterIndex = index;
+      this.createDragGhost(charData, pointer.x, pointer.y);
+    });
+
+    zone.on('drag', (pointer) => {
+      if (this.dragGhost) {
+        this.dragGhost.x = pointer.x;
+        this.dragGhost.y = pointer.y;
+      }
+    });
+
+    zone.on('dragend', () => {
+      if (this.dragRosterIndex >= 0) {
+        this._justDraggedRoster = true;
+      }
+      this.destroyDragGhost();
+      this.dragRosterIndex = -1;
+    });
+
+    this.input.setDraggable(zone);
 
     return { container, selectOverlay, unavailOverlay, hoverOverlay, zone, x, y, w, h, index };
   }
@@ -350,6 +381,14 @@ export default class TeamBuilderScene extends Phaser.Scene {
         this.teamSlots[this.dragSlot] = this.teamSlots[slotIndex];
         this.teamSlots[slotIndex] = temp;
         this.refreshAll();
+      } else if (this.dragRosterIndex >= 0) {
+        // Roster card dropped onto slot
+        const charData = this.allCharacters[this.dragRosterIndex];
+        if (!this.isCharOnTeam(this.dragRosterIndex) && !this.isCharUnavailable(this.dragRosterIndex)) {
+          this.teamSlots[slotIndex] = charData;
+          this.selectedCardIndex = -1;
+          this.refreshAll();
+        }
       }
     });
 
@@ -513,11 +552,12 @@ export default class TeamBuilderScene extends Phaser.Scene {
   }
 
   refreshStartButton() {
+    if (!this.startBtn) return;
     const hasMember = this.teamSlots.some(s => s);
-    if (this.startBtn) {
+    if (this.startBtn.zone.input) {
       this.startBtn.zone.input.enabled = hasMember;
-      this.startBtn.label.setAlpha(hasMember ? 1 : 0.3);
     }
+    this.startBtn.label.setAlpha(hasMember ? 1 : 0.3);
   }
 
   // ============================================================
@@ -536,7 +576,7 @@ export default class TeamBuilderScene extends Phaser.Scene {
     startBg.lineStyle(2, 0x338833, 0.7);
     startBg.strokeRoundedRect(startX - startW / 2, bottomY - startH / 2, startW, startH, 6);
 
-    const startLabel = this.add.text(startX, bottomY, 'START', {
+    const startLabel = this.add.text(startX, bottomY, 'SAVE TEAM', {
       fontSize: '16px', color: '#338833', fontFamily: 'monospace', fontStyle: 'bold'
     }).setOrigin(0.5).setDepth(10);
 
