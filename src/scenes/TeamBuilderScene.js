@@ -22,6 +22,7 @@ export default class TeamBuilderScene extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor(PAPER_BG);
+    this.input.dragDistanceThreshold = 8;
 
     // Load roster
     const roster = this.cache.json.get('roster');
@@ -66,6 +67,29 @@ export default class TeamBuilderScene extends Phaser.Scene {
 
     // Create team area
     this.createTeamArea();
+
+    // Scene-level drop handler (Phaser fires 'drop' on the input manager, not on the drop zone)
+    this.input.on('drop', (_pointer, draggedObj, dropZone) => {
+      // Find which slot this drop zone belongs to
+      const slotIndex = this.slotElements.findIndex(el => el.zone === dropZone);
+      if (slotIndex < 0) return;
+
+      if (this.dragSlot >= 0 && this.dragSlot !== slotIndex) {
+        // Swap slots
+        const temp = this.teamSlots[this.dragSlot];
+        this.teamSlots[this.dragSlot] = this.teamSlots[slotIndex];
+        this.teamSlots[slotIndex] = temp;
+        this.refreshAll();
+      } else if (this.dragRosterIndex >= 0) {
+        // Roster card dropped onto slot
+        const charData = this.allCharacters[this.dragRosterIndex];
+        if (!this.isCharOnTeam(this.dragRosterIndex) && !this.isCharUnavailable(this.dragRosterIndex)) {
+          this.teamSlots[slotIndex] = charData;
+          this.selectedCardIndex = -1;
+          this.refreshAll();
+        }
+      }
+    });
 
     // Scroll input
     this.input.on('wheel', (_p, _g, _dx, dy) => {
@@ -352,10 +376,15 @@ export default class TeamBuilderScene extends Phaser.Scene {
     container.add(zone);
 
     zone.on('pointerup', () => {
+      // Don't handle click if we just finished a drag
+      if (this._justDraggedSlot) {
+        this._justDraggedSlot = false;
+        return;
+      }
       this.onSlotClick(slotIndex);
     });
 
-    // Drag support - make filled slots draggable
+    // Drag support - make filled slots draggable for reordering
     zone.on('dragstart', (pointer) => {
       if (!this.teamSlots[slotIndex]) return;
       this.dragSlot = slotIndex;
@@ -370,26 +399,11 @@ export default class TeamBuilderScene extends Phaser.Scene {
     });
 
     zone.on('dragend', () => {
+      if (this.dragSlot >= 0) {
+        this._justDraggedSlot = true;
+      }
       this.destroyDragGhost();
       this.dragSlot = -1;
-    });
-
-    zone.on('drop', (pointer, target) => {
-      if (this.dragSlot >= 0 && this.dragSlot !== slotIndex) {
-        // Swap slots
-        const temp = this.teamSlots[this.dragSlot];
-        this.teamSlots[this.dragSlot] = this.teamSlots[slotIndex];
-        this.teamSlots[slotIndex] = temp;
-        this.refreshAll();
-      } else if (this.dragRosterIndex >= 0) {
-        // Roster card dropped onto slot
-        const charData = this.allCharacters[this.dragRosterIndex];
-        if (!this.isCharOnTeam(this.dragRosterIndex) && !this.isCharUnavailable(this.dragRosterIndex)) {
-          this.teamSlots[slotIndex] = charData;
-          this.selectedCardIndex = -1;
-          this.refreshAll();
-        }
-      }
     });
 
     this.input.setDraggable(zone);
