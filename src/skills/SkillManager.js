@@ -4,17 +4,27 @@ import { IceArmorPassive } from './implementations/IceArmorPassive.js';
 import { FrostNovaActive } from './implementations/FrostNovaActive.js';
 import { StormBoltPassive } from './implementations/StormBoltPassive.js';
 import { ThunderStrikeActive } from './implementations/ThunderStrikeActive.js';
+import { ToxicTouchPassive } from './implementations/ToxicTouchPassive.js';
+import { ToxicBurstActive } from './implementations/ToxicBurstActive.js';
+import { TerrainCrusherPassive } from './implementations/TerrainCrusherPassive.js';
+import { RageModeActive } from './implementations/RageModeActive.js';
+import { DeployClonesActive } from './implementations/DeployClonesActive.js';
 
 const PASSIVE_MAP = {
   orbiting_fireballs: OrbitingFireballsPassive,
   ice_armor: IceArmorPassive,
-  storm_bolt: StormBoltPassive
+  storm_bolt: StormBoltPassive,
+  toxic_touch: ToxicTouchPassive,
+  terrain_crusher: TerrainCrusherPassive
 };
 
 const ACTIVE_MAP = {
   mega_fireball: MegaFireballActive,
   frost_nova: FrostNovaActive,
-  thunder_strike: ThunderStrikeActive
+  thunder_strike: ThunderStrikeActive,
+  toxic_burst: ToxicBurstActive,
+  rage_mode: RageModeActive,
+  deploy_clones: DeployClonesActive
 };
 
 export class SkillManager {
@@ -84,5 +94,6 @@ export class SkillManager {
 
   deactivate() {
     if (this.passiveSkill) this.passiveSkill.deactivate();
+    if (this.activeSkill && this.activeSkill.deactivate) this.activeSkill.deactivate();
   }
 }

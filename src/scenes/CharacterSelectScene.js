@@ -10,27 +10,51 @@ const CARD_BG = 0xeae4d8;
 const CHARACTERS = [
   {
     dataId: 'player_default',
-    name: 'Flame Magician',
+    name: 'Wizard Cat',
     description: 'Orbiting fireballs burn enemies on contact. Mega Fireball leaves blazing trails.',
     color: 0xff6600,
     avatarColor: 0xff6600,
-    stats: { hp: 100, shield: 40, atk: 8, passive: 'Orbiting Fireballs', active: 'Mega Fireball' }
+    stats: { hp: 100, shield: 40, atk: 8, spd: 500, cost: 25, passive: 'Orbiting Fireballs', active: 'Mega Fireball' }
   },
   {
     dataId: 'player_frost_knight',
-    name: 'Frost Knight',
+    name: 'Soldier Cat',
     description: 'Heavy armor halves incoming damage. Frost Nova freezes and leaves frost terrain.',
     color: 0x44ccff,
     avatarColor: 0x44ccff,
-    stats: { hp: 120, shield: 60, atk: 12, passive: 'Ice Armor (50% DR)', active: 'Frost Nova' }
+    stats: { hp: 120, shield: 60, atk: 12, spd: 450, cost: 25, passive: 'Ice Armor (50% DR)', active: 'Frost Nova' }
   },
   {
     dataId: 'player_storm_archer',
-    name: 'Storm Archer',
+    name: 'Archer Cat',
     description: 'Auto-fires lightning bolts. Thunder Strike pierces and leaves electric terrain.',
     color: 0xffee00,
     avatarColor: 0xffee00,
-    stats: { hp: 80, shield: 30, atk: 5, passive: 'Storm Bolt (3s)', active: 'Thunder Strike' }
+    stats: { hp: 80, shield: 30, atk: 5, spd: 550, cost: 25, passive: 'Storm Bolt (2s)', active: 'Thunder Strike' }
+  },
+  {
+    dataId: 'player_science_cat',
+    name: 'Science Cat',
+    description: 'Poisons enemies on contact. Toxic Burst deals AoE damage and inflicts long poison.',
+    color: 0x66ff22,
+    avatarColor: 0x66ff22,
+    stats: { hp: 100, shield: 50, atk: 5, spd: 715, cost: 25, passive: 'Toxic Touch', active: 'Toxic Burst' }
+  },
+  {
+    dataId: 'player_sumo_cat',
+    name: 'Sumo Cat',
+    description: 'Deals 5x damage to breakable terrain. Rage Mode boosts ATK 500% and blocks all damage.',
+    color: 0xff8844,
+    avatarColor: 0xff8844,
+    stats: { hp: 250, shield: 100, atk: 15, spd: 413, cost: 35, passive: 'Terrain Crusher', active: 'Rage Mode' }
+  },
+  {
+    dataId: 'player_mecha_cat',
+    name: 'Mecha Cat',
+    description: 'Orbiting fireballs burn enemies. Deploy Clone fires 4 bouncing clones in cardinal directions.',
+    color: 0xcc44ff,
+    avatarColor: 0xcc44ff,
+    stats: { hp: 150, shield: 50, atk: 10, spd: 550, cost: 50, passive: 'Burn Orbs', active: 'Deploy Clones' }
   }
 ];
 
@@ -63,17 +87,21 @@ export default class CharacterSelectScene extends Phaser.Scene {
     lineGfx.lineStyle(1.5, INK_DARK, 0.25);
     lineGfx.lineBetween(100, 66, CANVAS_WIDTH - 100, 66);
 
-    // Character cards
-    const cardW = 220;
-    const cardH = 400;
-    const gap = 24;
-    const totalW = CHARACTERS.length * cardW + (CHARACTERS.length - 1) * gap;
+    // Character cards — 2 rows of 3
+    const cardW = 230;
+    const cardH = 340;
+    const gapX = 20;
+    const gapY = 16;
+    const cols = 3;
+    const totalW = cols * cardW + (cols - 1) * gapX;
     const startX = (CANVAS_WIDTH - totalW) / 2 + cardW / 2;
 
     this.cardContainers = [];
     CHARACTERS.forEach((char, i) => {
-      const cx = startX + i * (cardW + gap);
-      const cy = 310;
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const cx = startX + col * (cardW + gapX);
+      const cy = 270 + row * (cardH + gapY);
       this.createCharacterCard(cx, cy, cardW, cardH, char, i);
     });
 
@@ -120,22 +148,42 @@ export default class CharacterSelectScene extends Phaser.Scene {
     avatarGfx.fillCircle(cx + 4, avatarY + avatarSize / 2 - 2, 1.5);
 
     // Character-specific icon elements
-    if (index === 0) {
+    const acx = cx;
+    const acy = avatarY + avatarSize / 2;
+    if (char.dataId === 'player_default') {
       // Fire: orbiting fireballs
       [0, 120, 240].forEach(deg => {
         const rad = Phaser.Math.DegToRad(deg);
         avatarGfx.fillStyle(char.avatarColor, 0.9);
-        avatarGfx.fillCircle(cx + Math.cos(rad) * 28, avatarY + avatarSize / 2 + Math.sin(rad) * 28, 6);
+        avatarGfx.fillCircle(acx + Math.cos(rad) * 28, acy + Math.sin(rad) * 28, 6);
       });
-    } else if (index === 1) {
+    } else if (char.dataId === 'player_frost_knight') {
       // Ice: shield ring
       avatarGfx.lineStyle(3, char.avatarColor, 0.8);
-      avatarGfx.strokeCircle(cx, avatarY + avatarSize / 2, 22);
-    } else {
+      avatarGfx.strokeCircle(acx, acy, 22);
+    } else if (char.dataId === 'player_storm_archer') {
       // Storm: bolts
       avatarGfx.fillStyle(char.avatarColor, 0.9);
-      avatarGfx.fillTriangle(cx - 15, avatarY + 25, cx - 5, avatarY + 40, cx - 10, avatarY + 35);
-      avatarGfx.fillTriangle(cx + 15, avatarY + 25, cx + 5, avatarY + 40, cx + 10, avatarY + 35);
+      avatarGfx.fillTriangle(acx - 15, acy - 15, acx - 5, acy, acx - 10, acy - 5);
+      avatarGfx.fillTriangle(acx + 15, acy - 15, acx + 5, acy, acx + 10, acy - 5);
+    } else if (char.dataId === 'player_science_cat') {
+      // Poison: bubbles
+      avatarGfx.fillStyle(char.avatarColor, 0.7);
+      avatarGfx.fillCircle(acx - 18, acy - 10, 5);
+      avatarGfx.fillCircle(acx + 20, acy + 5, 4);
+      avatarGfx.fillCircle(acx - 8, acy + 18, 3);
+    } else if (char.dataId === 'player_sumo_cat') {
+      // Sumo: larger body outline
+      avatarGfx.lineStyle(3, char.avatarColor, 0.8);
+      avatarGfx.strokeCircle(acx, acy, 20);
+      avatarGfx.lineStyle(2, char.avatarColor, 0.5);
+      avatarGfx.strokeCircle(acx, acy, 26);
+    } else if (char.dataId === 'player_mecha_cat') {
+      // Mecha: gear/cross pattern
+      avatarGfx.lineStyle(2, char.avatarColor, 0.8);
+      avatarGfx.lineBetween(acx, acy - 24, acx, acy + 24);
+      avatarGfx.lineBetween(acx - 24, acy, acx + 24, acy);
+      avatarGfx.strokeCircle(acx, acy, 20);
     }
     container.add(avatarGfx);
 
@@ -154,33 +202,35 @@ export default class CharacterSelectScene extends Phaser.Scene {
     // Stats separator
     const sepGfx = this.add.graphics();
     sepGfx.lineStyle(1, char.color, selected ? 0.4 : 0.15);
-    sepGfx.lineBetween(x + 16, y + 210, x + w - 16, y + 210);
+    sepGfx.lineBetween(x + 16, y + 180, x + w - 16, y + 180);
     container.add(sepGfx);
 
     // Stats
-    const statsY = y + 222;
+    const statsY = y + 190;
     const statLines = [
       { label: 'HP', value: char.stats.hp },
       { label: 'SHIELD', value: char.stats.shield },
       { label: 'ATK', value: char.stats.atk },
+      { label: 'SPD', value: char.stats.spd },
+      { label: 'COST', value: char.stats.cost },
       { label: 'PASSIVE', value: char.stats.passive },
       { label: 'ACTIVE', value: char.stats.active }
     ];
     const statsColor = selected ? '#666677' : '#999999';
     const valColor = selected ? '#333344' : '#888888';
     statLines.forEach((stat, si) => {
-      const sy = statsY + si * 22;
-      container.add(this.add.text(x + 16, sy, stat.label, {
-        fontSize: '10px', color: statsColor, fontFamily: 'monospace'
+      const sy = statsY + si * 18;
+      container.add(this.add.text(x + 12, sy, stat.label, {
+        fontSize: '9px', color: statsColor, fontFamily: 'monospace'
       }));
-      container.add(this.add.text(x + w - 16, sy, `${stat.value}`, {
-        fontSize: '10px', color: valColor, fontFamily: 'monospace'
+      container.add(this.add.text(x + w - 12, sy, `${stat.value}`, {
+        fontSize: '9px', color: valColor, fontFamily: 'monospace'
       }).setOrigin(1, 0));
     });
 
     // Selected badge
     if (selected) {
-      const badgeY = y + h - 38;
+      const badgeY = y + h - 30;
       const badgeBg = this.add.graphics();
       badgeBg.fillStyle(char.color, 0.2);
       badgeBg.fillRoundedRect(cx - 50, badgeY, 100, 24, 4);
@@ -220,7 +270,7 @@ export default class CharacterSelectScene extends Phaser.Scene {
   createConfirmButton() {
     const char = CHARACTERS[this.selectedIndex];
     const bx = CANVAS_WIDTH / 2;
-    const by = CANVAS_HEIGHT - 100;
+    const by = CANVAS_HEIGHT - 50;
     const bw = 200;
     const bh = 44;
 

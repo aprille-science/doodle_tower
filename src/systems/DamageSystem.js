@@ -25,7 +25,8 @@ export default class DamageSystem {
           this.applyDamageToPlayer(tile.damage, this.player.x, this.player.y);
         }
         if (tile.hp !== -1) {
-          tile.takeDamage(1);
+          const terrainMult = this.player.terrainDamageMultiplier || 1;
+          tile.takeDamage(1 * terrainMult);
         }
       }
     }
