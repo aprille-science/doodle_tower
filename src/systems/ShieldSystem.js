@@ -11,12 +11,12 @@ export default class ShieldSystem {
     this.slowmoTimer = 0;
     this.slowmoActive = false;
 
-    // Mouse input for shield
-    scene.input.on('pointerdown', () => {
+    // G key input for shield
+    scene.input.keyboard.on('keydown-G', () => {
       this.onShieldActivate();
     });
 
-    scene.input.on('pointerup', () => {
+    scene.input.keyboard.on('keyup-G', () => {
       this.player.deactivateShield();
     });
   }

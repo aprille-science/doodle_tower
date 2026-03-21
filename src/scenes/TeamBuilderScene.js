@@ -36,8 +36,18 @@ export default class TeamBuilderScene extends Phaser.Scene {
       if (data) this.allCharacters.push(data);
     }
 
-    // Team slots: [null, null, null, null]
-    this.teamSlots = [null, null, null, null];
+    // Team slots: restore from registry if available
+    const savedTeam = this.registry.get('teamData');
+    if (savedTeam && Array.isArray(savedTeam) && savedTeam.length > 0) {
+      this.teamSlots = [null, null, null, null];
+      for (let i = 0; i < Math.min(savedTeam.length, MAX_SLOTS); i++) {
+        // Match saved character to loaded data by id
+        const match = this.allCharacters.find(c => c.id === savedTeam[i].id);
+        if (match) this.teamSlots[i] = match;
+      }
+    } else {
+      this.teamSlots = [null, null, null, null];
+    }
     this.selectedCardIndex = -1; // index into allCharacters
     this.dragSlot = -1;
     this.dragRosterIndex = -1;
@@ -262,9 +272,11 @@ export default class TeamBuilderScene extends Phaser.Scene {
       }
     });
 
-    zone.on('dragend', () => {
+    zone.on('dragend', (pointer) => {
       if (this.dragRosterIndex >= 0) {
         this._justDraggedRoster = true;
+        // Manual drop detection: check if pointer is over any slot
+        this.tryDropOnSlot(pointer, this.dragRosterIndex, -1);
       }
       this.destroyDragGhost();
       this.dragRosterIndex = -1;
@@ -398,9 +410,11 @@ export default class TeamBuilderScene extends Phaser.Scene {
       }
     });
 
-    zone.on('dragend', () => {
+    zone.on('dragend', (pointer) => {
       if (this.dragSlot >= 0) {
         this._justDraggedSlot = true;
+        // Manual drop detection: check if pointer is over any slot
+        this.tryDropOnSlot(pointer, -1, this.dragSlot);
       }
       this.destroyDragGhost();
       this.dragSlot = -1;
@@ -409,6 +423,31 @@ export default class TeamBuilderScene extends Phaser.Scene {
     this.input.setDraggable(zone);
 
     this.slotElements.push({ container, bg, keyLabel, contentContainer, zone, x, y, w, h });
+  }
+
+  tryDropOnSlot(pointer, rosterIndex, fromSlot) {
+    for (let i = 0; i < this.slotElements.length; i++) {
+      const el = this.slotElements[i];
+      if (pointer.x >= el.x && pointer.x <= el.x + el.w &&
+          pointer.y >= el.y && pointer.y <= el.y + el.h) {
+        if (fromSlot >= 0 && fromSlot !== i) {
+          // Slot-to-slot swap
+          const temp = this.teamSlots[fromSlot];
+          this.teamSlots[fromSlot] = this.teamSlots[i];
+          this.teamSlots[i] = temp;
+          this.refreshAll();
+        } else if (rosterIndex >= 0) {
+          // Roster card dropped onto slot
+          const charData = this.allCharacters[rosterIndex];
+          if (!this.isCharOnTeam(rosterIndex) && !this.isCharUnavailable(rosterIndex)) {
+            this.teamSlots[i] = charData;
+            this.selectedCardIndex = -1;
+            this.refreshAll();
+          }
+        }
+        return;
+      }
+    }
   }
 
   onSlotClick(slotIndex) {
