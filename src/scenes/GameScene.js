@@ -325,7 +325,10 @@ export default class GameScene extends Phaser.Scene {
     this.teamState.setActive(slotIndex);
     const incoming = this.teamState.getActiveState();
 
-    // Spawn new player
+    // Spawn new player — use outgoing position if incoming has no saved position
+    if (!incoming.lastPosition && outgoing && outgoing.lastPosition) {
+      incoming.lastPosition = { ...outgoing.lastPosition };
+    }
     this.player = this.spawnPlayer(incoming);
 
     // Auto-swap from death: grant invincibility
